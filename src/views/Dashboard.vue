@@ -60,7 +60,7 @@
       <div class="content-card">
         <div class="card-header">
           <h2 class="card-title">{{ t('dashboard.recentTrades') }}</h2>
-          <button class="btn">{{ t('common.all') }}</button>
+          <button class="btn" @click="goToOrders">{{ t('common.all') }}</button>
         </div>
         <div class="table-container">
           <table class="table">
@@ -161,6 +161,11 @@ import * as echarts from 'echarts'
 
 const router = useRouter()
 const currentLanguage = inject('language', ref(getCurrentLanguage()))
+
+// 跳转到订单页面
+const goToOrders = () => {
+  router.push('/orders')
+}
 
 // 监听语言变化
 window.addEventListener('language-changed', () => {

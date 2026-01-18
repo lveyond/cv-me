@@ -1,22 +1,22 @@
 <template>
   <div class="orders-page">
     <div class="page-header">
-      <h1 class="page-title">订单列表</h1>
+      <h1 class="page-title">{{ t('orders.title') }}</h1>
       <div class="page-actions">
         <select v-model="filterStatus" class="input" style="width: 150px;">
-          <option value="all">全部状态</option>
-          <option value="pending">待成交</option>
-          <option value="partial">部分成交</option>
-          <option value="filled">已完成</option>
-          <option value="cancelled">已取消</option>
+          <option value="all">{{ t('orders.allStatus') }}</option>
+          <option value="pending">{{ t('orders.statusPending') }}</option>
+          <option value="partial">{{ t('orders.statusPartial') }}</option>
+          <option value="filled">{{ t('orders.statusFilled') }}</option>
+          <option value="cancelled">{{ t('orders.statusCancelled') }}</option>
         </select>
         <select v-model="filterPair" class="input" style="width: 150px;">
-          <option value="all">全部交易对</option>
+          <option value="all">{{ t('orders.allPairs') }}</option>
           <option value="ETH/USDT">ETH/USDT</option>
           <option value="BTC/USDT">BTC/USDT</option>
           <option value="SOL/USDT">SOL/USDT</option>
         </select>
-        <button class="btn">导出</button>
+        <button class="btn">{{ t('orders.export') }}</button>
       </div>
     </div>
 
@@ -25,42 +25,52 @@
         <table class="table">
           <thead>
             <tr>
-              <th>时间</th>
-              <th>交易对</th>
-              <th>类型</th>
-              <th>方向</th>
-              <th>价格</th>
-              <th>数量</th>
-              <th>已成交</th>
-              <th>状态</th>
-              <th>操作</th>
+              <th>{{ t('orders.time') }}</th>
+              <th>{{ t('orders.tradingPair') }}</th>
+              <th>{{ t('orders.type') }}</th>
+              <th>{{ t('orders.direction') }}</th>
+              <th>{{ t('orders.price') }}</th>
+              <th>{{ t('orders.amount') }}</th>
+              <th>{{ t('orders.filled') }}</th>
+              <th>{{ t('orders.status') }}</th>
+              <th>{{ t('orders.action') }}</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="order in filteredOrders" :key="order.id">
               <td class="mono">{{ order.time }}</td>
-              <td>{{ order.pair }}</td>
               <td>
-                <span class="badge">{{ order.type }}</span>
+                <div class="pair-info">
+                  <img 
+                    :src="getPairIcon(order.pair)" 
+                    :alt="order.pair"
+                    class="pair-icon"
+                    @error="handleImageError"
+                  />
+                  <span>{{ order.pair }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="badge">{{ getOrderTypeText(order.type) }}</span>
               </td>
               <td>
                 <span :class="order.side === 'buy' ? 'text-success' : 'text-danger'">
-                  {{ order.side === 'buy' ? '买入' : '卖出' }}
+                  {{ order.side === 'buy' ? t('orders.buy') : t('orders.sell') }}
                 </span>
               </td>
               <td class="mono">${{ order.price }}</td>
               <td class="mono">{{ order.amount }}</td>
               <td class="mono">{{ order.filled }}</td>
               <td>
-                <span :class="getStatusClass(order.status)">{{ order.status }}</span>
+                <span :class="getStatusClass(order.status)">{{ getStatusText(order.status) }}</span>
               </td>
               <td>
                 <button 
-                  v-if="order.status === '待成交' || order.status === '部分成交'"
+                  v-if="order.status === statusMap.pending || order.status === statusMap.partial"
                   class="btn btn-cancel"
                   @click="cancelOrder(order.id)"
                 >
-                  取消
+                  {{ t('orders.cancel') }}
                 </button>
                 <span v-else class="text-muted mono">-</span>
               </td>
@@ -70,49 +80,76 @@
       </div>
 
       <div class="pagination">
-        <button class="btn" :disabled="currentPage === 1" @click="currentPage--">上一页</button>
+        <button class="btn" :disabled="currentPage === 1" @click="currentPage--">{{ t('orders.prevPage') }}</button>
         <span class="pagination-info mono">
-          第 {{ currentPage }} / {{ totalPages }} 页
+          {{ getPageInfo() }}
         </span>
-        <button class="btn" :disabled="currentPage === totalPages" @click="currentPage++">下一页</button>
+        <button class="btn" :disabled="currentPage === totalPages" @click="currentPage++">{{ t('orders.nextPage') }}</button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, inject, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { getCurrentLanguage, t as translate } from '../i18n'
 
 const router = useRouter()
+const currentLanguage = inject('language', ref(getCurrentLanguage()))
+
+// 监听语言变化
+const handleLanguageChange = () => {
+  currentLanguage.value = getCurrentLanguage()
+}
+
+onMounted(() => {
+  window.addEventListener('language-changed', handleLanguageChange)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('language-changed', handleLanguageChange)
+})
+
+const t = (key) => {
+  return translate(key, currentLanguage.value)
+}
+
+const getPageInfo = () => {
+  const template = t('orders.pageInfo')
+  return template.replace('{current}', currentPage.value).replace('{total}', totalPages.value)
+}
 
 const filterStatus = ref('all')
 const filterPair = ref('all')
 const currentPage = ref(1)
 const pageSize = 20
 
+// 状态映射（使用内部标识，显示时翻译）
+const statusMap = {
+  pending: 'pending',
+  partial: 'partial',
+  filled: 'filled',
+  cancelled: 'cancelled'
+}
+
+// 订单数据（使用内部状态标识）
 const orders = ref([
-  { id: 1, time: '2024-01-15 14:32:15', pair: 'ETH/USDT', type: '限价', side: 'buy', price: '2750.00', amount: '1.0', filled: '0.0', status: '待成交' },
-  { id: 2, time: '2024-01-15 14:28:42', pair: 'ETH/USDT', type: '限价', side: 'sell', price: '2760.00', amount: '0.5', filled: '0.2', status: '部分成交' },
-  { id: 3, time: '2024-01-15 14:25:18', pair: 'BTC/USDT', type: '限价', side: 'buy', price: '42850.00', amount: '0.1', filled: '0.1', status: '已完成' },
-  { id: 4, time: '2024-01-15 14:20:05', pair: 'SOL/USDT', type: '市价', side: 'buy', price: '98.45', amount: '50', filled: '50', status: '已完成' },
-  { id: 5, time: '2024-01-15 14:15:33', pair: 'ETH/USDT', type: '限价', side: 'sell', price: '2755.00', amount: '2.0', filled: '0.0', status: '已取消' },
-  { id: 6, time: '2024-01-15 14:10:22', pair: 'BTC/USDT', type: '限价', side: 'buy', price: '42800.00', amount: '0.05', filled: '0.05', status: '已完成' },
-  { id: 7, time: '2024-01-15 14:05:11', pair: 'ETH/USDT', type: '限价', side: 'sell', price: '2765.00', amount: '1.5', filled: '0.0', status: '待成交' },
-  { id: 8, time: '2024-01-15 14:00:05', pair: 'SOL/USDT', type: '市价', side: 'sell', price: '98.20', amount: '30', filled: '30', status: '已完成' }
+  { id: 1, time: '2024-01-15 14:32:15', pair: 'ETH/USDT', type: 'limit', side: 'buy', price: '2750.00', amount: '1.0', filled: '0.0', status: 'pending' },
+  { id: 2, time: '2024-01-15 14:28:42', pair: 'ETH/USDT', type: 'limit', side: 'sell', price: '2760.00', amount: '0.5', filled: '0.2', status: 'partial' },
+  { id: 3, time: '2024-01-15 14:25:18', pair: 'BTC/USDT', type: 'limit', side: 'buy', price: '42850.00', amount: '0.1', filled: '0.1', status: 'filled' },
+  { id: 4, time: '2024-01-15 14:20:05', pair: 'SOL/USDT', type: 'market', side: 'buy', price: '98.45', amount: '50', filled: '50', status: 'filled' },
+  { id: 5, time: '2024-01-15 14:15:33', pair: 'ETH/USDT', type: 'limit', side: 'sell', price: '2755.00', amount: '2.0', filled: '0.0', status: 'cancelled' },
+  { id: 6, time: '2024-01-15 14:10:22', pair: 'BTC/USDT', type: 'limit', side: 'buy', price: '42800.00', amount: '0.05', filled: '0.05', status: 'filled' },
+  { id: 7, time: '2024-01-15 14:05:11', pair: 'ETH/USDT', type: 'limit', side: 'sell', price: '2765.00', amount: '1.5', filled: '0.0', status: 'pending' },
+  { id: 8, time: '2024-01-15 14:00:05', pair: 'SOL/USDT', type: 'market', side: 'sell', price: '98.20', amount: '30', filled: '30', status: 'filled' }
 ])
 
 const filteredOrders = computed(() => {
   let result = orders.value
 
   if (filterStatus.value !== 'all') {
-    const statusMap = {
-      pending: '待成交',
-      partial: '部分成交',
-      filled: '已完成',
-      cancelled: '已取消'
-    }
-    result = result.filter(order => order.status === statusMap[filterStatus.value])
+    result = result.filter(order => order.status === filterStatus.value)
   }
 
   if (filterPair.value !== 'all') {
@@ -127,13 +164,7 @@ const filteredOrders = computed(() => {
 const totalPages = computed(() => {
   let count = orders.value.length
   if (filterStatus.value !== 'all') {
-    const statusMap = {
-      pending: '待成交',
-      partial: '部分成交',
-      filled: '已完成',
-      cancelled: '已取消'
-    }
-    count = orders.value.filter(order => order.status === statusMap[filterStatus.value]).length
+    count = orders.value.filter(order => order.status === filterStatus.value).length
   }
   if (filterPair.value !== 'all') {
     count = orders.value.filter(order => order.pair === filterPair.value).length
@@ -143,19 +174,61 @@ const totalPages = computed(() => {
 
 const getStatusClass = (status) => {
   const classes = {
-    '待成交': 'badge badge-warning',
-    '部分成交': 'badge badge-warning',
-    '已完成': 'badge badge-success',
-    '已取消': 'badge'
+    'pending': 'badge badge-warning',
+    'partial': 'badge badge-warning',
+    'filled': 'badge badge-success',
+    'cancelled': 'badge'
   }
   return classes[status] || 'badge'
+}
+
+const getStatusText = (status) => {
+  const statusTextMap = {
+    'pending': 'orders.statusPending',
+    'partial': 'orders.statusPartial',
+    'filled': 'orders.statusFilled',
+    'cancelled': 'orders.statusCancelled'
+  }
+  return t(statusTextMap[status] || 'orders.statusPending')
+}
+
+const getOrderTypeText = (type) => {
+  const typeMap = {
+    'limit': 'orders.limitOrder',
+    'market': 'orders.marketOrder'
+  }
+  return t(typeMap[type] || 'orders.limitOrder')
 }
 
 const cancelOrder = (orderId) => {
   const order = orders.value.find(o => o.id === orderId)
   if (order) {
-    order.status = '已取消'
+    order.status = 'cancelled'
   }
+}
+
+// 获取交易对图标（取第一个币种的图标）
+const getPairIcon = (pair) => {
+  const symbol = pair.split('/')[0]
+  return getAssetIcon(symbol)
+}
+
+// 获取币种图标URL
+const getAssetIcon = (symbol) => {
+  const iconMap = {
+    'ETH': 'https://assets.coingecko.com/coins/images/279/small/ethereum.png',
+    'BTC': 'https://assets.coingecko.com/coins/images/1/small/bitcoin.png',
+    'USDT': 'https://assets.coingecko.com/coins/images/325/small/Tether.png',
+    'USDC': 'https://assets.coingecko.com/coins/images/6319/small/USD_Coin_icon.png',
+    'SOL': 'https://assets.coingecko.com/coins/images/4128/small/solana.png',
+    'MATIC': 'https://assets.coingecko.com/coins/images/4713/small/matic-token-icon.png'
+  }
+  return iconMap[symbol] || `https://assets.coingecko.com/coins/images/1/small/bitcoin.png`
+}
+
+// 处理图标加载错误
+const handleImageError = (event) => {
+  event.target.style.display = 'none'
 }
 </script>
 
@@ -208,5 +281,18 @@ const cancelOrder = (orderId) => {
   border-color: rgba(255, 255, 255, 0.25);
   color: var(--text-primary);
   transform: none;
+}
+
+.pair-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.pair-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 </style>
