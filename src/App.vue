@@ -4,7 +4,7 @@
       <div class="navbar-brand">
         <span class="brand-icon">⚡</span>
         <span class="brand-text">QuantDApp</span>
-        <span class="brand-badge">v1.0.0</span>
+        <span class="brand-badge">v1.3.1</span>
       </div>
       <div class="navbar-nav">
         <svg width="0" height="0" style="position: absolute;">
@@ -52,16 +52,30 @@
         <span class="footer-text">GitHub: <a href="https://github.com/lveyond" target="_blank" rel="noopener noreferrer" class="footer-link">@lveyond</a></span>
         <span class="footer-separator">|</span>
         <span class="footer-text">Built with ❤️ for DeFi</span>
+        <span class="footer-separator">|</span>
+        <button class="resume-trigger" @click="showResume = true" :title="translate('resume.title', currentLanguage)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+        </button>
       </div>
     </footer>
+    
+    <Resume :show="showResume" @close="showResume = false" />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, provide } from 'vue'
 import { getCurrentLanguage, setCurrentLanguage, t as translate } from './i18n'
+import Resume from './views/Resume.vue'
 
 const currentLanguage = ref(getCurrentLanguage())
+const showResume = ref(false)
 
 const changeLanguage = (event) => {
   const lang = event.target.value
@@ -100,6 +114,16 @@ const navItems = computed(() => [
     path: '/analytics', 
     name: translate('nav.analytics', currentLanguage.value), 
     icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 6 13.5 14.5 8.5 9.5 2 16"></polyline><polyline points="16 6 22 6 22 12"></polyline></svg>`
+  },
+  { 
+    path: '/community', 
+    name: translate('nav.community', currentLanguage.value), 
+    icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>`
+  },
+  { 
+    path: '/game', 
+    name: translate('nav.game', currentLanguage.value), 
+    icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>`
   }
 ])
 
@@ -358,5 +382,29 @@ window.addEventListener('language-changed', () => {
   color: #79c0ff;
   text-decoration: underline;
   opacity: 0.9;
+}
+
+.resume-trigger {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: var(--spacing-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  transition: all 0.2s;
+  margin-left: var(--spacing-xs);
+}
+
+.resume-trigger:hover {
+  color: var(--text-link);
+  background: rgba(99, 102, 241, 0.1);
+}
+
+.resume-trigger svg {
+  width: 16px;
+  height: 16px;
 }
 </style>

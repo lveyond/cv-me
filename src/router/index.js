@@ -5,6 +5,8 @@ import Strategies from '../views/Strategies.vue'
 import Assets from '../views/Assets.vue'
 import Analytics from '../views/Analytics.vue'
 import Orders from '../views/Orders.vue'
+import Community from '../views/Community.vue'
+import Game from '../views/Game.vue'
 
 const routes = [{
         path: '/',
@@ -35,6 +37,16 @@ const routes = [{
         path: '/orders',
         name: 'Orders',
         component: Orders
+    },
+    {
+        path: '/community',
+        name: 'Community',
+        component: Community
+    },
+    {
+        path: '/game',
+        name: 'Game',
+        component: Game
     }
 ]
 
