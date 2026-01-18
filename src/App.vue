@@ -21,7 +21,7 @@
           :key="item.path"
           :to="item.path"
           class="nav-link"
-          :class="{ active: isActiveRoute(item.path) }"
+          :class="{ active: isRouteActive(item.path) }"
         >
           <span class="nav-icon" v-html="item.icon"></span>
           <span class="nav-text">{{ item.name }}</span>
@@ -130,14 +130,21 @@ const navItems = computed(() => [
   }
 ])
 
-// 判断路由是否激活（支持根路径和别名）
-const isActiveRoute = (path) => {
+// 判断路由是否激活（使用路由名称更可靠，route 是响应式的）
+const isRouteActive = (path) => {
   const currentPath = route.path
-  // 如果是根路径，同时匹配 / 和 /dashboard
+  const currentName = route.name
+  
+  // 如果是仪表盘路径，检查路由名称或路径
   if (path === '/') {
-    return currentPath === '/' || currentPath === '/dashboard'
+    return currentName === 'Dashboard' || currentPath === '/' || currentPath === '/dashboard' || currentPath.startsWith('/dashboard')
   }
-  return currentPath === path
+  
+  // 标准化路径比较
+  const normalizedCurrentPath = currentPath === '/' ? '/' : currentPath.replace(/\/$/, '')
+  const normalizedPath = path === '/' ? '/' : path.replace(/\/$/, '')
+  
+  return normalizedCurrentPath === normalizedPath
 }
 
 // 监听语言变化，更新导航项

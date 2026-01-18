@@ -52,8 +52,18 @@ const routes = [{
 ]
 
 const router = createRouter({
-    history: createWebHistory(),
+    history: createWebHistory(import.meta.env.BASE_URL), // 使用 Vite 的 base URL
     routes
+})
+
+// 确保根路径正确加载 Dashboard
+router.beforeEach((to, from, next) => {
+    // 如果访问根路径且不是 Dashboard，重定向到 Dashboard
+    if (to.path === '/' && to.name !== 'Dashboard') {
+        next({ name: 'Dashboard', replace: true })
+        return
+    }
+    next()
 })
 
 export default router
