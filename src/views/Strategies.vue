@@ -151,8 +151,8 @@
           <!-- 步骤1: 选择策略模板 -->
           <div v-if="currentStep === 1" class="wizard-step-content">
             <div class="step-header">
-              <h3 class="step-title">选择策略模板</h3>
-              <p class="step-description">选择一个适合你需求的策略模板，我们将根据模板自动生成策略代码</p>
+              <h3 class="step-title">{{ t('strategies.wizard.step1Title') }}</h3>
+              <p class="step-description">{{ t('strategies.wizard.step1Desc') }}</p>
             </div>
             
             <div class="template-grid">
@@ -175,7 +175,7 @@
                 </div>
                 <div class="template-stats">
                   <span class="stat-item">
-                    <span class="stat-label">适用场景</span>
+                    <span class="stat-label">{{ t('strategies.wizard.applicableScenario') }}</span>
                     <span class="stat-value">{{ template.scenario }}</span>
                   </span>
                 </div>
@@ -184,25 +184,25 @@
 
             <div class="form-group">
               <label class="form-label">
-                <span>策略名称</span>
+                <span>{{ t('strategies.wizard.strategyName') }}</span>
                 <span class="form-required">*</span>
               </label>
               <input 
                 v-model="newStrategy.name" 
                 type="text" 
                 class="input" 
-                placeholder="例如：我的网格交易策略"
+                :placeholder="t('strategies.wizard.strategyNamePlaceholder')"
                 @keydown.enter.prevent
               >
             </div>
 
             <div class="form-group">
-              <label class="form-label">策略描述（可选）</label>
+              <label class="form-label">{{ t('strategies.wizard.strategyDesc') }}</label>
               <textarea 
                 v-model="newStrategy.description" 
                 class="input" 
                 rows="2" 
-                placeholder="简单描述一下这个策略的用途..."
+                :placeholder="t('strategies.wizard.strategyDescPlaceholder')"
               ></textarea>
             </div>
           </div>
@@ -210,8 +210,8 @@
           <!-- 步骤2: 配置参数 -->
           <div v-if="currentStep === 2" class="wizard-step-content">
             <div class="step-header">
-              <h3 class="step-title">配置策略参数</h3>
-              <p class="step-description">根据你的需求调整策略参数，系统会实时预览效果</p>
+              <h3 class="step-title">{{ t('strategies.wizard.step2Title') }}</h3>
+              <p class="step-description">{{ t('strategies.wizard.step2Desc') }}</p>
             </div>
 
             <div v-if="selectedTemplate" class="params-config">
@@ -291,17 +291,17 @@
             <!-- 实时预览 -->
             <div class="preview-section">
               <div class="preview-header">
-                <span class="preview-title">实时预览</span>
+                <span class="preview-title">{{ t('strategies.wizard.realtimePreview') }}</span>
               </div>
               <div class="preview-card">
                 <div class="preview-stats">
                   <div class="preview-stat">
-                    <span class="preview-stat-label">策略类型</span>
+                    <span class="preview-stat-label">{{ t('strategies.wizard.strategyType') }}</span>
                     <span class="preview-stat-value">{{ selectedTemplate?.name || '-' }}</span>
                   </div>
                   <div class="preview-stat">
-                    <span class="preview-stat-label">参数数量</span>
-                    <span class="preview-stat-value">{{ selectedTemplate?.params?.length || 0 }} 个</span>
+                    <span class="preview-stat-label">{{ t('strategies.wizard.paramCount') }}</span>
+                    <span class="preview-stat-value">{{ selectedTemplate?.params?.length || 0 }} {{ t('strategies.wizard.paramUnit') }}</span>
                   </div>
                 </div>
               </div>
@@ -311,29 +311,29 @@
           <!-- 步骤3: 预览确认 -->
           <div v-if="currentStep === 3" class="wizard-step-content">
             <div class="step-header">
-              <h3 class="step-title">预览并确认</h3>
-              <p class="step-description">检查策略信息，确认无误后点击创建</p>
+              <h3 class="step-title">{{ t('strategies.wizard.step3Title') }}</h3>
+              <p class="step-description">{{ t('strategies.wizard.step3Desc') }}</p>
             </div>
 
             <div class="preview-summary">
               <div class="summary-card">
-                <h4 class="summary-title">策略信息</h4>
+                <h4 class="summary-title">{{ t('strategies.wizard.summaryInfo') }}</h4>
                 <div class="summary-item">
-                  <span class="summary-label">策略名称</span>
-                  <span class="summary-value">{{ newStrategy.name || '未命名' }}</span>
+                  <span class="summary-label">{{ t('strategies.wizard.summaryName') }}</span>
+                  <span class="summary-value">{{ newStrategy.name || t('strategies.wizard.unnamed') }}</span>
                 </div>
                 <div class="summary-item">
-                  <span class="summary-label">策略类型</span>
+                  <span class="summary-label">{{ t('strategies.wizard.summaryType') }}</span>
                   <span class="summary-value">{{ selectedTemplate?.name || '-' }}</span>
                 </div>
                 <div class="summary-item" v-if="newStrategy.description">
-                  <span class="summary-label">描述</span>
+                  <span class="summary-label">{{ t('strategies.wizard.summaryDesc') }}</span>
                   <span class="summary-value">{{ newStrategy.description }}</span>
                 </div>
               </div>
 
               <div class="summary-card">
-                <h4 class="summary-title">参数配置</h4>
+                <h4 class="summary-title">{{ t('strategies.wizard.summaryParams') }}</h4>
                 <div class="params-summary">
                   <div 
                     v-for="param in selectedTemplate?.params" 
@@ -351,27 +351,27 @@
             <div class="advanced-section">
               <div class="advanced-header">
                 <div>
-                  <span class="advanced-title">高级选项：代码编辑器</span>
-                  <span class="advanced-hint">（可选）修改生成的代码</span>
+                  <span class="advanced-title">{{ t('strategies.wizard.advancedOptions') }}</span>
+                  <span class="advanced-hint">{{ t('strategies.wizard.advancedHint') }}</span>
                 </div>
                 <button 
                   class="btn btn-sm btn-secondary" 
                   @click.stop="showAdvanced = !showAdvanced"
                   type="button"
                 >
-                  {{ showAdvanced ? '隐藏代码' : '显示代码' }}
+                  {{ showAdvanced ? t('strategies.wizard.hideCode') : t('strategies.wizard.showCode') }}
                 </button>
               </div>
               <div v-if="showAdvanced" class="code-editor-container">
                 <div class="code-editor-wrapper">
                   <div class="code-editor-header">
                     <span class="code-file-name mono">{{ newStrategy.file || 'strategy.py' }}</span>
-                    <button class="btn btn-sm" @click.stop="resetCodeTemplate" type="button">重置模板</button>
+                    <button class="btn btn-sm" @click.stop="resetCodeTemplate" type="button">{{ t('strategies.wizard.resetTemplate') }}</button>
                   </div>
                   <textarea 
                     v-model="newStrategy.code" 
                     class="code-textarea mono"
-                    placeholder="策略代码..."
+                    :placeholder="t('strategies.wizard.codePlaceholder')"
                     spellcheck="false"
                   ></textarea>
                 </div>
@@ -381,15 +381,15 @@
         </div>
 
         <div class="modal-footer">
-          <button class="btn" @click="prevStep" v-if="currentStep > 1">上一步</button>
-          <button class="btn" @click="closeCreateModal" v-if="currentStep === 1">取消</button>
+          <button class="btn" @click="prevStep" v-if="currentStep > 1">{{ t('strategies.wizard.prevStep') }}</button>
+          <button class="btn" @click="closeCreateModal" v-if="currentStep === 1">{{ t('strategies.wizard.cancel') }}</button>
           <button 
             class="btn btn-primary" 
             @click="nextStep" 
             v-if="currentStep < 3"
             :disabled="!canGoNext"
           >
-            下一步
+            {{ t('strategies.wizard.nextStep') }}
           </button>
           <button 
             class="btn btn-primary" 
@@ -397,7 +397,7 @@
             v-if="currentStep === 3"
             :disabled="!canCreate"
           >
-            创建策略
+            {{ t('strategies.wizard.create') }}
           </button>
         </div>
       </div>
@@ -424,11 +424,11 @@ const currentStrategy = ref(null)
 
 // 向导步骤
 const currentStep = ref(1)
-const wizardSteps = [
-  { label: '选择模板', key: 'template' },
-  { label: '配置参数', key: 'params' },
-  { label: '预览确认', key: 'preview' }
-]
+const wizardSteps = computed(() => [
+  { label: t('strategies.wizard.step1'), key: 'template' },
+  { label: t('strategies.wizard.step2'), key: 'params' },
+  { label: t('strategies.wizard.step3'), key: 'preview' }
+])
 
 const selectedTemplate = ref(null)
 const showAdvanced = ref(false)
@@ -473,41 +473,45 @@ const getTemplateIcon = (templateId) => {
   return icons[templateId] || ''
 }
 
-const strategyTemplates = [
+const strategyTemplates = computed(() => [
   {
     id: 'grid',
-    name: '网格交易策略',
-    description: '在价格波动中通过网格挂单获取收益，适合震荡市场',
-    scenario: '震荡市场',
-    tags: ['低风险', '稳定收益', '自动化'],
+    name: t('strategies.templates.grid.name'),
+    description: t('strategies.templates.grid.description'),
+    scenario: t('strategies.templates.grid.scenario'),
+    tags: [
+      t('strategies.templates.grid.tags.lowRisk'),
+      t('strategies.templates.grid.tags.stableReturn'),
+      t('strategies.templates.grid.tags.automation')
+    ],
     params: [
       {
         key: 'grid_size',
-        label: '网格大小',
+        label: t('strategies.templates.grid.params.gridSize'),
         type: 'slider',
         value: 0.5,
         min: 0.1,
         max: 5,
         step: 0.1,
         unit: '%',
-        hint: '网格间距，建议0.5%-2%',
+        hint: t('strategies.templates.grid.params.gridSizeHint'),
         required: true
       },
       {
         key: 'grid_count',
-        label: '网格数量',
+        label: t('strategies.templates.grid.params.gridCount'),
         type: 'slider',
         value: 20,
         min: 5,
         max: 50,
         step: 1,
-        unit: '个',
-        hint: '网格层数，建议10-30层',
+        unit: t('strategies.templates.grid.params.gridCountUnit'),
+        hint: t('strategies.templates.grid.params.gridCountHint'),
         required: true
       },
       {
         key: 'base_asset',
-        label: '基础资产',
+        label: t('strategies.templates.grid.params.baseAsset'),
         type: 'select',
         value: 'ETH',
         options: [
@@ -516,12 +520,12 @@ const strategyTemplates = [
           { label: 'BNB', value: 'BNB' },
           { label: 'SOL', value: 'SOL' }
         ],
-        hint: '选择要交易的币种',
+        hint: t('strategies.templates.grid.params.baseAssetHint'),
         required: true
       },
       {
         key: 'quote_asset',
-        label: '计价资产',
+        label: t('strategies.templates.grid.params.quoteAsset'),
         type: 'select',
         value: 'USDT',
         options: [
@@ -529,7 +533,7 @@ const strategyTemplates = [
           { label: 'USDC', value: 'USDC' },
           { label: 'BUSD', value: 'BUSD' }
         ],
-        hint: '选择计价货币',
+        hint: t('strategies.templates.grid.params.quoteAssetHint'),
         required: true
       }
     ],
@@ -546,57 +550,61 @@ const strategyTemplates = [
   },
   {
     id: 'mean_reversion',
-    name: '均值回归策略',
-    description: '当价格偏离移动平均线时进行反向交易，适合波动较大的市场',
-    scenario: '波动市场',
-    tags: ['中等风险', '趋势捕捉', '技术分析'],
+    name: t('strategies.templates.meanReversion.name'),
+    description: t('strategies.templates.meanReversion.description'),
+    scenario: t('strategies.templates.meanReversion.scenario'),
+    tags: [
+      t('strategies.templates.meanReversion.tags.mediumRisk'),
+      t('strategies.templates.meanReversion.tags.trendCapture'),
+      t('strategies.templates.meanReversion.tags.technicalAnalysis')
+    ],
     params: [
       {
         key: 'ma_short',
-        label: '短期均线周期',
+        label: t('strategies.templates.meanReversion.params.maShort'),
         type: 'slider',
         value: 20,
         min: 5,
         max: 50,
         step: 5,
-        unit: '天',
-        hint: '短期移动平均线周期',
+        unit: t('strategies.templates.meanReversion.params.dayUnit'),
+        hint: t('strategies.templates.meanReversion.params.maShortHint'),
         required: true
       },
       {
         key: 'ma_long',
-        label: '长期均线周期',
+        label: t('strategies.templates.meanReversion.params.maLong'),
         type: 'slider',
         value: 50,
         min: 20,
         max: 200,
         step: 10,
-        unit: '天',
-        hint: '长期移动平均线周期',
+        unit: t('strategies.templates.meanReversion.params.dayUnit'),
+        hint: t('strategies.templates.meanReversion.params.maLongHint'),
         required: true
       },
       {
         key: 'deviation',
-        label: '偏离阈值',
+        label: t('strategies.templates.meanReversion.params.deviation'),
         type: 'slider',
         value: 2,
         min: 0.5,
         max: 5,
         step: 0.5,
         unit: '%',
-        hint: '价格偏离均线的百分比',
+        hint: t('strategies.templates.meanReversion.params.deviationHint'),
         required: true
       },
       {
         key: 'position_size',
-        label: '仓位大小',
+        label: t('strategies.templates.meanReversion.params.positionSize'),
         type: 'slider',
         value: 10,
         min: 5,
         max: 50,
         step: 5,
         unit: '%',
-        hint: '每次交易的仓位占比',
+        hint: t('strategies.templates.meanReversion.params.positionSizeHint'),
         required: true
       }
     ],
@@ -614,69 +622,73 @@ const strategyTemplates = [
   },
   {
     id: 'trend_following',
-    name: '趋势跟踪策略',
-    description: '使用RSI和MACD指标识别趋势并跟随，适合趋势明显的市场',
-    scenario: '趋势市场',
-    tags: ['中高风险', '趋势跟踪', '技术指标'],
+    name: t('strategies.templates.trendFollowing.name'),
+    description: t('strategies.templates.trendFollowing.description'),
+    scenario: t('strategies.templates.trendFollowing.scenario'),
+    tags: [
+      t('strategies.templates.trendFollowing.tags.mediumHighRisk'),
+      t('strategies.templates.trendFollowing.tags.trendFollowing'),
+      t('strategies.templates.trendFollowing.tags.technicalIndicators')
+    ],
     params: [
       {
         key: 'rsi_period',
-        label: 'RSI周期',
+        label: t('strategies.templates.trendFollowing.params.rsiPeriod'),
         type: 'slider',
         value: 14,
         min: 7,
         max: 30,
         step: 1,
-        unit: '天',
-        hint: 'RSI指标的计算周期',
+        unit: t('strategies.templates.trendFollowing.params.dayUnit'),
+        hint: t('strategies.templates.trendFollowing.params.rsiPeriodHint'),
         required: true
       },
       {
         key: 'rsi_oversold',
-        label: 'RSI超卖线',
+        label: t('strategies.templates.trendFollowing.params.rsiOversold'),
         type: 'slider',
         value: 30,
         min: 20,
         max: 40,
         step: 5,
         unit: '',
-        hint: 'RSI低于此值视为超卖',
+        hint: t('strategies.templates.trendFollowing.params.rsiOversoldHint'),
         required: true
       },
       {
         key: 'rsi_overbought',
-        label: 'RSI超买线',
+        label: t('strategies.templates.trendFollowing.params.rsiOverbought'),
         type: 'slider',
         value: 70,
         min: 60,
         max: 80,
         step: 5,
         unit: '',
-        hint: 'RSI高于此值视为超买',
+        hint: t('strategies.templates.trendFollowing.params.rsiOverboughtHint'),
         required: true
       },
       {
         key: 'macd_fast',
-        label: 'MACD快线',
+        label: t('strategies.templates.trendFollowing.params.macdFast'),
         type: 'slider',
         value: 12,
         min: 5,
         max: 20,
         step: 1,
-        unit: '天',
-        hint: 'MACD快线周期',
+        unit: t('strategies.templates.trendFollowing.params.dayUnit'),
+        hint: t('strategies.templates.trendFollowing.params.macdFastHint'),
         required: true
       },
       {
         key: 'macd_slow',
-        label: 'MACD慢线',
+        label: t('strategies.templates.trendFollowing.params.macdSlow'),
         type: 'slider',
         value: 26,
         min: 20,
         max: 50,
         step: 2,
-        unit: '天',
-        hint: 'MACD慢线周期',
+        unit: t('strategies.templates.trendFollowing.params.dayUnit'),
+        hint: t('strategies.templates.trendFollowing.params.macdSlowHint'),
         required: true
       }
     ],
@@ -691,26 +703,30 @@ const strategyTemplates = [
   },
   {
     id: 'arbitrage',
-    name: '套利策略',
-    description: '在不同交易所之间寻找价差并套利，风险低但机会有限',
-    scenario: '多交易所',
-    tags: ['低风险', '套利', '多交易所'],
+    name: t('strategies.templates.arbitrage.name'),
+    description: t('strategies.templates.arbitrage.description'),
+    scenario: t('strategies.templates.arbitrage.scenario'),
+    tags: [
+      t('strategies.templates.arbitrage.tags.lowRisk'),
+      t('strategies.templates.arbitrage.tags.arbitrage'),
+      t('strategies.templates.arbitrage.tags.multiExchange')
+    ],
     params: [
       {
         key: 'min_spread',
-        label: '最小价差',
+        label: t('strategies.templates.arbitrage.params.minSpread'),
         type: 'slider',
         value: 0.5,
         min: 0.1,
         max: 2,
         step: 0.1,
         unit: '%',
-        hint: '触发套利的最小价差',
+        hint: t('strategies.templates.arbitrage.params.minSpreadHint'),
         required: true
       },
       {
         key: 'exchange_a',
-        label: '交易所A',
+        label: t('strategies.templates.arbitrage.params.exchangeA'),
         type: 'select',
         value: 'Binance',
         options: [
@@ -719,12 +735,12 @@ const strategyTemplates = [
           { label: 'Coinbase', value: 'Coinbase' },
           { label: 'Kraken', value: 'Kraken' }
         ],
-        hint: '第一个交易所',
+        hint: t('strategies.templates.arbitrage.params.exchangeAHint'),
         required: true
       },
       {
         key: 'exchange_b',
-        label: '交易所B',
+        label: t('strategies.templates.arbitrage.params.exchangeB'),
         type: 'select',
         value: 'OKX',
         options: [
@@ -733,19 +749,19 @@ const strategyTemplates = [
           { label: 'Coinbase', value: 'Coinbase' },
           { label: 'Kraken', value: 'Kraken' }
         ],
-        hint: '第二个交易所',
+        hint: t('strategies.templates.arbitrage.params.exchangeBHint'),
         required: true
       },
       {
         key: 'max_position',
-        label: '最大仓位',
+        label: t('strategies.templates.arbitrage.params.maxPosition'),
         type: 'number',
         value: 1000,
         min: 100,
         max: 10000,
         step: 100,
         unit: ' USDT',
-        hint: '单次套利的最大资金量',
+        hint: t('strategies.templates.arbitrage.params.maxPositionHint'),
         required: true
       }
     ],
@@ -763,7 +779,7 @@ const strategyTemplates = [
             buy_low_exchange('{exchange_b}', price_b)
             sell_high_exchange('{exchange_a}', price_a)`
   }
-]
+])
 
 const canGoNext = computed(() => {
   if (currentStep.value === 1) {

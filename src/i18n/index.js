@@ -131,7 +131,132 @@ export const languages = {
       gridTrading: '网格交易策略',
       meanReversion: '均值回归策略',
       trendFollowing: '趋势跟踪策略',
-      arbitrage: '套利策略'
+      arbitrage: '套利策略',
+      // 策略创建向导
+      wizard: {
+        step1: '选择模板',
+        step2: '配置参数',
+        step3: '预览确认',
+        step1Title: '选择策略模板',
+        step1Desc: '选择一个适合你需求的策略模板，我们将根据模板自动生成策略代码',
+        step2Title: '配置策略参数',
+        step2Desc: '根据你的需求调整策略参数，系统会实时预览效果',
+        step3Title: '预览并确认',
+        step3Desc: '检查策略信息，确认无误后点击创建',
+        strategyName: '策略名称',
+        strategyNamePlaceholder: '例如：我的网格交易策略',
+        strategyDesc: '策略描述（可选）',
+        strategyDescPlaceholder: '简单描述一下这个策略的用途...',
+        applicableScenario: '适用场景',
+        realtimePreview: '实时预览',
+        strategyType: '策略类型',
+        paramCount: '参数数量',
+        paramUnit: '个',
+        summaryInfo: '策略信息',
+        summaryParams: '参数配置',
+        summaryName: '策略名称',
+        summaryType: '策略类型',
+        summaryDesc: '描述',
+        unnamed: '未命名',
+        advancedOptions: '高级选项：代码编辑器',
+        advancedHint: '（可选）修改生成的代码',
+        showCode: '显示代码',
+        hideCode: '隐藏代码',
+        resetTemplate: '重置模板',
+        codePlaceholder: '策略代码...',
+        prevStep: '上一步',
+        nextStep: '下一步',
+        cancel: '取消',
+        create: '创建策略'
+      },
+      // 策略模板
+      templates: {
+        grid: {
+          name: '网格交易策略',
+          description: '在价格波动中通过网格挂单获取收益，适合震荡市场',
+          scenario: '震荡市场',
+          tags: {
+            lowRisk: '低风险',
+            stableReturn: '稳定收益',
+            automation: '自动化'
+          },
+          params: {
+            gridSize: '网格大小',
+            gridSizeHint: '网格间距，建议0.5%-2%',
+            gridCount: '网格数量',
+            gridCountHint: '网格层数，建议10-30层',
+            gridCountUnit: '个',
+            baseAsset: '基础资产',
+            baseAssetHint: '选择要交易的币种',
+            quoteAsset: '计价资产',
+            quoteAssetHint: '选择计价货币'
+          }
+        },
+        meanReversion: {
+          name: '均值回归策略',
+          description: '当价格偏离移动平均线时进行反向交易，适合波动较大的市场',
+          scenario: '波动市场',
+          tags: {
+            mediumRisk: '中等风险',
+            trendCapture: '趋势捕捉',
+            technicalAnalysis: '技术分析'
+          },
+          params: {
+            maShort: '短期均线周期',
+            maShortHint: '短期移动平均线周期',
+            maLong: '长期均线周期',
+            maLongHint: '长期移动平均线周期',
+            deviation: '偏离阈值',
+            deviationHint: '价格偏离均线的百分比',
+            positionSize: '仓位大小',
+            positionSizeHint: '每次交易的仓位占比',
+            dayUnit: '天'
+          }
+        },
+        trendFollowing: {
+          name: '趋势跟踪策略',
+          description: '使用RSI和MACD指标识别趋势并跟随，适合趋势明显的市场',
+          scenario: '趋势市场',
+          tags: {
+            mediumHighRisk: '中高风险',
+            trendFollowing: '趋势跟踪',
+            technicalIndicators: '技术指标'
+          },
+          params: {
+            rsiPeriod: 'RSI周期',
+            rsiPeriodHint: 'RSI指标的计算周期',
+            rsiOversold: 'RSI超卖线',
+            rsiOversoldHint: 'RSI低于此值视为超卖',
+            rsiOverbought: 'RSI超买线',
+            rsiOverboughtHint: 'RSI高于此值视为超买',
+            macdFast: 'MACD快线',
+            macdFastHint: 'MACD快线周期',
+            macdSlow: 'MACD慢线',
+            macdSlowHint: 'MACD慢线周期',
+            dayUnit: '天'
+          }
+        },
+        arbitrage: {
+          name: '套利策略',
+          description: '在不同交易所之间寻找价差并套利，风险低但机会有限',
+          scenario: '多交易所',
+          tags: {
+            lowRisk: '低风险',
+            arbitrage: '套利',
+            multiExchange: '多交易所'
+          },
+          params: {
+            minSpread: '最小价差',
+            minSpreadHint: '触发套利的最小价差',
+            exchangeA: '交易所A',
+            exchangeAHint: '第一个交易所',
+            exchangeB: '交易所B',
+            exchangeBHint: '第二个交易所',
+            maxPosition: '最大仓位',
+            maxPositionHint: '单次套利的最大资金量'
+          }
+        }
+      }
     },
     analytics: {
       title: '数据分析',
@@ -513,7 +638,132 @@ export const languages = {
       gridTrading: '網格交易策略',
       meanReversion: '均值回歸策略',
       trendFollowing: '趨勢跟蹤策略',
-      arbitrage: '套利策略'
+      arbitrage: '套利策略',
+      // 策略創建嚮導
+      wizard: {
+        step1: '選擇模板',
+        step2: '配置參數',
+        step3: '預覽確認',
+        step1Title: '選擇策略模板',
+        step1Desc: '選擇一個適合你需求的策略模板，我們將根據模板自動生成策略代碼',
+        step2Title: '配置策略參數',
+        step2Desc: '根據你的需求調整策略參數，系統會實時預覽效果',
+        step3Title: '預覽並確認',
+        step3Desc: '檢查策略信息，確認無誤後點擊創建',
+        strategyName: '策略名稱',
+        strategyNamePlaceholder: '例如：我的網格交易策略',
+        strategyDesc: '策略描述（可選）',
+        strategyDescPlaceholder: '簡單描述一下這個策略的用途...',
+        applicableScenario: '適用場景',
+        realtimePreview: '實時預覽',
+        strategyType: '策略類型',
+        paramCount: '參數數量',
+        paramUnit: '個',
+        summaryInfo: '策略信息',
+        summaryParams: '參數配置',
+        summaryName: '策略名稱',
+        summaryType: '策略類型',
+        summaryDesc: '描述',
+        unnamed: '未命名',
+        advancedOptions: '高級選項：代碼編輯器',
+        advancedHint: '（可選）修改生成的代碼',
+        showCode: '顯示代碼',
+        hideCode: '隱藏代碼',
+        resetTemplate: '重置模板',
+        codePlaceholder: '策略代碼...',
+        prevStep: '上一步',
+        nextStep: '下一步',
+        cancel: '取消',
+        create: '創建策略'
+      },
+      // 策略模板
+      templates: {
+        grid: {
+          name: '網格交易策略',
+          description: '在價格波動中通過網格掛單獲取收益，適合震盪市場',
+          scenario: '震盪市場',
+          tags: {
+            lowRisk: '低風險',
+            stableReturn: '穩定收益',
+            automation: '自動化'
+          },
+          params: {
+            gridSize: '網格大小',
+            gridSizeHint: '網格間距，建議0.5%-2%',
+            gridCount: '網格數量',
+            gridCountHint: '網格層數，建議10-30層',
+            gridCountUnit: '個',
+            baseAsset: '基礎資產',
+            baseAssetHint: '選擇要交易的幣種',
+            quoteAsset: '計價資產',
+            quoteAssetHint: '選擇計價貨幣'
+          }
+        },
+        meanReversion: {
+          name: '均值回歸策略',
+          description: '當價格偏離移動平均線時進行反向交易，適合波動較大的市場',
+          scenario: '波動市場',
+          tags: {
+            mediumRisk: '中等風險',
+            trendCapture: '趨勢捕捉',
+            technicalAnalysis: '技術分析'
+          },
+          params: {
+            maShort: '短期均線週期',
+            maShortHint: '短期移動平均線週期',
+            maLong: '長期均線週期',
+            maLongHint: '長期移動平均線週期',
+            deviation: '偏離閾值',
+            deviationHint: '價格偏離均線的百分比',
+            positionSize: '倉位大小',
+            positionSizeHint: '每次交易的倉位佔比',
+            dayUnit: '天'
+          }
+        },
+        trendFollowing: {
+          name: '趨勢跟蹤策略',
+          description: '使用RSI和MACD指標識別趨勢並跟隨，適合趨勢明顯的市場',
+          scenario: '趨勢市場',
+          tags: {
+            mediumHighRisk: '中高風險',
+            trendFollowing: '趨勢跟蹤',
+            technicalIndicators: '技術指標'
+          },
+          params: {
+            rsiPeriod: 'RSI週期',
+            rsiPeriodHint: 'RSI指標的計算週期',
+            rsiOversold: 'RSI超賣線',
+            rsiOversoldHint: 'RSI低於此值視為超賣',
+            rsiOverbought: 'RSI超買線',
+            rsiOverboughtHint: 'RSI高於此值視為超買',
+            macdFast: 'MACD快線',
+            macdFastHint: 'MACD快線週期',
+            macdSlow: 'MACD慢線',
+            macdSlowHint: 'MACD慢線週期',
+            dayUnit: '天'
+          }
+        },
+        arbitrage: {
+          name: '套利策略',
+          description: '在不同交易所之間尋找價差並套利，風險低但機會有限',
+          scenario: '多交易所',
+          tags: {
+            lowRisk: '低風險',
+            arbitrage: '套利',
+            multiExchange: '多交易所'
+          },
+          params: {
+            minSpread: '最小價差',
+            minSpreadHint: '觸發套利的最小價差',
+            exchangeA: '交易所A',
+            exchangeAHint: '第一個交易所',
+            exchangeB: '交易所B',
+            exchangeBHint: '第二個交易所',
+            maxPosition: '最大倉位',
+            maxPositionHint: '單次套利的最大資金量'
+          }
+        }
+      }
     },
     analytics: {
       title: '數據分析',
@@ -895,7 +1145,132 @@ export const languages = {
       gridTrading: 'Grid Trading Strategy',
       meanReversion: 'Mean Reversion Strategy',
       trendFollowing: 'Trend Following Strategy',
-      arbitrage: 'Arbitrage Strategy'
+      arbitrage: 'Arbitrage Strategy',
+      // Strategy Creation Wizard
+      wizard: {
+        step1: 'Select Template',
+        step2: 'Configure Parameters',
+        step3: 'Preview & Confirm',
+        step1Title: 'Select Strategy Template',
+        step1Desc: 'Choose a strategy template that suits your needs, and we will automatically generate strategy code based on the template',
+        step2Title: 'Configure Strategy Parameters',
+        step2Desc: 'Adjust strategy parameters according to your needs, the system will preview the effects in real-time',
+        step3Title: 'Preview and Confirm',
+        step3Desc: 'Review the strategy information and click create when everything is correct',
+        strategyName: 'Strategy Name',
+        strategyNamePlaceholder: 'e.g.: My Grid Trading Strategy',
+        strategyDesc: 'Strategy Description (Optional)',
+        strategyDescPlaceholder: 'Briefly describe the purpose of this strategy...',
+        applicableScenario: 'Applicable Scenario',
+        realtimePreview: 'Real-time Preview',
+        strategyType: 'Strategy Type',
+        paramCount: 'Parameters',
+        paramUnit: '',
+        summaryInfo: 'Strategy Information',
+        summaryParams: 'Parameter Configuration',
+        summaryName: 'Strategy Name',
+        summaryType: 'Strategy Type',
+        summaryDesc: 'Description',
+        unnamed: 'Unnamed',
+        advancedOptions: 'Advanced Options: Code Editor',
+        advancedHint: '(Optional) Modify the generated code',
+        showCode: 'Show Code',
+        hideCode: 'Hide Code',
+        resetTemplate: 'Reset Template',
+        codePlaceholder: 'Strategy code...',
+        prevStep: 'Previous',
+        nextStep: 'Next',
+        cancel: 'Cancel',
+        create: 'Create Strategy'
+      },
+      // Strategy Templates
+      templates: {
+        grid: {
+          name: 'Grid Trading Strategy',
+          description: 'Profit from price fluctuations by placing grid orders, suitable for volatile markets',
+          scenario: 'Volatile Market',
+          tags: {
+            lowRisk: 'Low Risk',
+            stableReturn: 'Stable Returns',
+            automation: 'Automation'
+          },
+          params: {
+            gridSize: 'Grid Size',
+            gridSizeHint: 'Grid spacing, recommended 0.5%-2%',
+            gridCount: 'Grid Count',
+            gridCountHint: 'Number of grid layers, recommended 10-30 layers',
+            gridCountUnit: '',
+            baseAsset: 'Base Asset',
+            baseAssetHint: 'Select the cryptocurrency to trade',
+            quoteAsset: 'Quote Asset',
+            quoteAssetHint: 'Select the quote currency'
+          }
+        },
+        meanReversion: {
+          name: 'Mean Reversion Strategy',
+          description: 'Trade in the opposite direction when prices deviate from the moving average, suitable for highly volatile markets',
+          scenario: 'Fluctuating Market',
+          tags: {
+            mediumRisk: 'Medium Risk',
+            trendCapture: 'Trend Capture',
+            technicalAnalysis: 'Technical Analysis'
+          },
+          params: {
+            maShort: 'Short-term MA Period',
+            maShortHint: 'Short-term moving average period',
+            maLong: 'Long-term MA Period',
+            maLongHint: 'Long-term moving average period',
+            deviation: 'Deviation Threshold',
+            deviationHint: 'Percentage of price deviation from the moving average',
+            positionSize: 'Position Size',
+            positionSizeHint: 'Position size per trade',
+            dayUnit: 'days'
+          }
+        },
+        trendFollowing: {
+          name: 'Trend Following Strategy',
+          description: 'Uses RSI and MACD indicators to identify and follow trends, suitable for markets with clear trends',
+          scenario: 'Trending Market',
+          tags: {
+            mediumHighRisk: 'Medium-High Risk',
+            trendFollowing: 'Trend Following',
+            technicalIndicators: 'Technical Indicators'
+          },
+          params: {
+            rsiPeriod: 'RSI Period',
+            rsiPeriodHint: 'RSI indicator calculation period',
+            rsiOversold: 'RSI Oversold Line',
+            rsiOversoldHint: 'RSI below this value is considered oversold',
+            rsiOverbought: 'RSI Overbought Line',
+            rsiOverboughtHint: 'RSI above this value is considered overbought',
+            macdFast: 'MACD Fast Line',
+            macdFastHint: 'MACD fast line period',
+            macdSlow: 'MACD Slow Line',
+            macdSlowHint: 'MACD slow line period',
+            dayUnit: 'days'
+          }
+        },
+        arbitrage: {
+          name: 'Arbitrage Strategy',
+          description: 'Find price differences between different exchanges and arbitrage, low risk but limited opportunities',
+          scenario: 'Multi-Exchange',
+          tags: {
+            lowRisk: 'Low Risk',
+            arbitrage: 'Arbitrage',
+            multiExchange: 'Multi-Exchange'
+          },
+          params: {
+            minSpread: 'Minimum Spread',
+            minSpreadHint: 'Minimum spread to trigger arbitrage',
+            exchangeA: 'Exchange A',
+            exchangeAHint: 'First exchange',
+            exchangeB: 'Exchange B',
+            exchangeBHint: 'Second exchange',
+            maxPosition: 'Max Position',
+            maxPositionHint: 'Maximum capital per arbitrage trade'
+          }
+        }
+      }
     },
     analytics: {
       title: 'Data Analysis',
