@@ -1,14 +1,8 @@
 <template>
-  <div v-if="show" class="resume-modal-overlay" @click="closeModal">
-    <div class="resume-modal" @click.stop>
+  <div class="resume-page">
+    <div class="resume-container">
       <div class="resume-header">
         <h1 class="resume-title">{{ t('resume.title') }}</h1>
-        <button class="close-btn" @click="closeModal">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
       </div>
       
       <div class="resume-content">
@@ -266,29 +260,42 @@
 </template>
 
 <script setup>
-import { ref, inject, computed } from 'vue'
+import { ref, inject } from 'vue'
 import { getCurrentLanguage, t as translate } from '../i18n'
-
-const props = defineProps({
-  show: {
-    type: Boolean,
-    default: false
-  }
-})
-
-const emit = defineEmits(['close'])
 
 const currentLanguage = inject('language', ref(getCurrentLanguage()))
 
 const t = (key) => translate(key, currentLanguage.value)
 
-const closeModal = () => {
-  emit('close')
-}
-
 const handleLogoError = (event) => {
   // 如果logo加载失败，隐藏图片
   event.target.style.display = 'none'
+}
+
+// 将文本转换为标签数组（用于专业资质和获奖荣誉）
+const parseTags = (text) => {
+  if (!text) return []
+  // 根据语言自动选择分隔符
+  const isEnglish = currentLanguage.value === 'en'
+  
+  if (isEnglish) {
+    // 英文模式：智能选择分隔符
+    // 如果包含分号，优先使用分号（获奖荣誉）
+    // 否则使用逗号（专业资质）
+    if (text.includes(';')) {
+      return text.split(';').map(tag => tag.trim()).filter(tag => tag)
+    } else {
+      return text.split(',').map(tag => tag.trim()).filter(tag => tag)
+    }
+  } else {
+    // 中文模式：使用顿号和中文逗号分割
+    let result = text.split('、').map(tag => tag.trim()).filter(tag => tag)
+    const newResult = []
+    result.forEach(item => {
+      newResult.push(...item.split('，').map(t => t.trim()).filter(t => t))
+    })
+    return newResult
+  }
 }
 
 // 赛博朋克荧光色高亮关键字
@@ -338,7 +345,6 @@ const highlightKeywords = (text) => {
     words.forEach(keyword => {
       // 转义特殊字符
       const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-      const regex = new RegExp(escapedKeyword, 'gi')
       
       // 收集所有匹配项
       const matches = []
@@ -374,95 +380,27 @@ const highlightKeywords = (text) => {
   
   return result
 }
-
-// 将文本转换为标签数组（用于专业资质和获奖荣誉）
-const parseTags = (text) => {
-  if (!text) return []
-  // 根据语言自动选择分隔符
-  const isEnglish = currentLanguage.value === 'en'
-  
-  if (isEnglish) {
-    // 英文模式：智能选择分隔符
-    // 如果包含分号，优先使用分号（获奖荣誉）
-    // 否则使用逗号（专业资质）
-    if (text.includes(';')) {
-      return text.split(';').map(tag => tag.trim()).filter(tag => tag)
-    } else {
-      return text.split(',').map(tag => tag.trim()).filter(tag => tag)
-    }
-  } else {
-    // 中文模式：使用顿号和中文逗号分割
-    let result = text.split('、').map(tag => tag.trim()).filter(tag => tag)
-    const newResult = []
-    result.forEach(item => {
-      newResult.push(...item.split('，').map(t => t.trim()).filter(t => t))
-    })
-    return newResult
-  }
-}
 </script>
 
 <style scoped>
-.resume-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.resume-page {
+  min-height: 100vh;
   padding: var(--spacing-xl);
-  overflow-y: auto;
-  animation: fadeIn 0.2s ease;
+  background: var(--bg-primary);
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.resume-modal {
+.resume-container {
+  max-width: 900px;
+  margin: 0 auto;
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  max-width: 900px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-  animation: slideUp 0.3s ease;
-}
-
-@keyframes slideUp {
-  from {
-    transform: translateY(20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
 }
 
 .resume-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   padding: var(--spacing-xl);
   border-bottom: 1px solid var(--border-color);
-  position: sticky;
-  top: 0;
-  background: var(--bg-secondary);
-  z-index: 10;
 }
 
 .resume-title {
@@ -471,25 +409,6 @@ const parseTags = (text) => {
   font-weight: 600;
   color: var(--text-primary);
   margin: 0;
-}
-
-.close-btn {
-  background: transparent;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  color: var(--text-secondary);
-  cursor: pointer;
-  padding: var(--spacing-xs);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-}
-
-.close-btn:hover {
-  background: var(--bg-hover);
-  border-color: var(--border-hover);
-  color: var(--text-primary);
 }
 
 .resume-content {
@@ -619,6 +538,39 @@ const parseTags = (text) => {
 .summary-text .cyber-highlight.cyber-orange {
   color: #F4A460 !important;
   background: rgba(244, 164, 96, 0.15) !important;
+}
+
+/* 赛博朋克高亮样式（无发光效果） */
+.cyber-highlight {
+  position: relative;
+  font-weight: 600;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.cyber-blue {
+  color: #5B9BD5;
+  background: rgba(91, 155, 213, 0.1);
+}
+
+.cyber-green {
+  color: #5B9BD5;
+  background: rgba(91, 155, 213, 0.1);
+}
+
+.cyber-pink {
+  color: #C77DFF;
+  background: rgba(199, 125, 255, 0.1);
+}
+
+.cyber-purple {
+  color: #C77DFF;
+  background: rgba(199, 125, 255, 0.1);
+}
+
+.cyber-orange {
+  color: #F4A460;
+  background: rgba(244, 164, 96, 0.1);
 }
 
 .qualifications-honors {
@@ -921,23 +873,5 @@ const parseTags = (text) => {
 .education-major {
   font-size: 13px;
   color: var(--text-secondary);
-}
-
-/* 滚动条样式 */
-.resume-modal::-webkit-scrollbar {
-  width: 8px;
-}
-
-.resume-modal::-webkit-scrollbar-track {
-  background: var(--bg-primary);
-}
-
-.resume-modal::-webkit-scrollbar-thumb {
-  background: var(--border-color);
-  border-radius: 4px;
-}
-
-.resume-modal::-webkit-scrollbar-thumb:hover {
-  background: var(--border-hover);
 }
 </style>

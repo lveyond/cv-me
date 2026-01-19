@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
 import Dashboard from '../views/Dashboard.vue'
 import Trading from '../views/Trading.vue'
 import Strategies from '../views/Strategies.vue'
@@ -7,6 +7,7 @@ import Analytics from '../views/Analytics.vue'
 import Orders from '../views/Orders.vue'
 import Community from '../views/Community.vue'
 import Game from '../views/Game.vue'
+import ResumePage from '../views/ResumePage.vue'
 
 const routes = [{
         path: '/',
@@ -48,11 +49,16 @@ const routes = [{
         path: '/game',
         name: 'Game',
         component: Game
+    },
+    {
+        path: '/resume',
+        name: 'Resume',
+        component: ResumePage
     }
 ]
 
 const router = createRouter({
-    history: createWebHistory(import.meta.env.BASE_URL), // 使用 Vite 的 base URL
+    history: createWebHashHistory(import.meta.env.BASE_URL), // 使用哈希路由，避免部署后刷新404问题
     routes
 })
 
