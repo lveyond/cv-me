@@ -585,6 +585,7 @@ const parseTags = (text) => {
   font-size: 14px;
   line-height: 1.8;
   color: var(--text-secondary);
+  white-space: pre-line;
 }
 
 /* 赛博朋克高亮样式（无发光效果） */
