@@ -273,7 +273,25 @@ quant-trading-dapp/
 
 ## 📄 许可证
 
-MIT License
+本项目采用 **MIT 和 Apache 2.0 双许可**（Dual License: MIT OR Apache-2.0）。
+
+**重要**：本项目仅限个人使用，不得私自商用。如需商业使用，必须获得明确的书面授权许可。
+
+详细许可说明请查看：
+- [LICENSE](./LICENSE) - MIT 许可证（含商业使用限制）
+- [LICENSE-APACHE](./LICENSE-APACHE) - Apache 2.0 许可证（含商业使用限制）
+- [LICENSE-NOTICE.md](./LICENSE-NOTICE.md) - 许可说明文档
+
+### 使用限制
+
+✅ **允许**：个人学习、研究和开发使用  
+❌ **禁止**（未经授权）：任何商业用途，包括但不限于：
+- 在商业产品或服务中使用
+- 作为商业产品的一部分分发
+- 用于产生收入或利润
+- 在任何商业环境中使用
+
+商业授权请联系项目维护者。
 
 ## 👨‍💻 作者
 
