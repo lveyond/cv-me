@@ -87,7 +87,7 @@
             <div class="education-item">
               <div class="education-header">
                 <div class="education-header-left">
-                  <img v-if="t('resume.edu1Logo')" :src="t('resume.edu1Logo')" :alt="t('resume.edu1School')" class="education-logo" @error="handleLogoError" />
+                  <img v-if="t('resume.edu1Logo')" :src="assetUrl(t('resume.edu1Logo'))" :alt="t('resume.edu1School')" class="education-logo" @error="handleLogoError" />
                   <h3 class="education-title">{{ t('resume.edu1Title') }}</h3>
                 </div>
                 <span class="education-period">{{ t('resume.edu1Period') }}</span>
@@ -102,7 +102,7 @@
             <div class="education-item">
               <div class="education-header">
                 <div class="education-header-left">
-                  <img v-if="t('resume.edu2Logo')" :src="t('resume.edu2Logo')" :alt="t('resume.edu2School')" class="education-logo" @error="handleLogoError" />
+                  <img v-if="t('resume.edu2Logo')" :src="assetUrl(t('resume.edu2Logo'))" :alt="t('resume.edu2School')" class="education-logo" @error="handleLogoError" />
                   <h3 class="education-title">{{ t('resume.edu2Title') }}</h3>
                 </div>
                 <span class="education-period">{{ t('resume.edu2Period') }}</span>
@@ -117,7 +117,7 @@
             <div class="education-item">
               <div class="education-header">
                 <div class="education-header-left">
-                  <img v-if="t('resume.edu3Logo')" :src="t('resume.edu3Logo')" :alt="t('resume.edu3School')" class="education-logo" @error="handleLogoError" />
+                  <img v-if="t('resume.edu3Logo')" :src="assetUrl(t('resume.edu3Logo'))" :alt="t('resume.edu3School')" class="education-logo" @error="handleLogoError" />
                   <h3 class="education-title">{{ t('resume.edu3Title') }}</h3>
                 </div>
                 <span class="education-period">{{ t('resume.edu3Period') }}</span>
@@ -132,7 +132,7 @@
             <div class="education-item">
               <div class="education-header">
                 <div class="education-header-left">
-                  <img v-if="t('resume.edu4Logo')" :src="t('resume.edu4Logo')" :alt="t('resume.edu4School')" class="education-logo" @error="handleLogoError" />
+                  <img v-if="t('resume.edu4Logo')" :src="assetUrl(t('resume.edu4Logo'))" :alt="t('resume.edu4School')" class="education-logo" @error="handleLogoError" />
                   <h3 class="education-title">{{ t('resume.edu4Title') }}</h3>
                 </div>
                 <span class="education-period">{{ t('resume.edu4Period') }}</span>
@@ -269,11 +269,12 @@
 import { ref, inject, onMounted, onUnmounted } from 'vue'
 import { getCurrentLanguage, t as translate } from '../i18n'
 import { getCertImage, verifyCertPassword } from '../utils/certImages'
+import { assetUrl } from '../utils/assetUrl'
 
 const currentLanguage = inject('language', ref(getCurrentLanguage()))
 
-// 个人照片：public/profile.jpg，相对路径 /profile.jpg
-const photoSrc = ref('/profile.jpg')
+// 个人照片：public/profile.jpg，需带 base 以支持 GitHub Pages
+const photoSrc = ref(assetUrl('/profile.jpg'))
 const photoError = ref(false)
 
 // 证书弹窗（密码校验，仅内存，刷新后需重输）
@@ -287,8 +288,9 @@ const certPending = ref(null) // { section, index }
 const openCertModal = (section, index) => {
   const src = getCertImage(section, index)
   if (!src) return
+  const fullSrc = assetUrl(src)
   if (certUnlocked.value) {
-    certModalImage.value = src
+    certModalImage.value = fullSrc
   } else {
     certPending.value = { section, index }
     certPasswordInput.value = ''
@@ -311,7 +313,7 @@ const submitCertPassword = () => {
     closeCertPasswordModal()
     if (pending) {
       const src = getCertImage(pending.section, pending.index)
-      if (src) certModalImage.value = src
+      if (src) certModalImage.value = assetUrl(src)
     }
   } else {
     certPasswordError.value = true

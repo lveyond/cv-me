@@ -102,7 +102,7 @@
             <div class="mosaic-edu-grid">
               <article v-for="i in 4" :key="i" class="mosaic-edu-card">
                 <div class="mosaic-edu-header">
-                  <img v-if="t(`resume.edu${i}Logo`)" :src="t(`resume.edu${i}Logo`)" :alt="t(`resume.edu${i}School`)" class="mosaic-edu-logo" @error="handleLogoError" />
+                  <img v-if="t(`resume.edu${i}Logo`)" :src="assetUrl(t(`resume.edu${i}Logo`))" :alt="t(`resume.edu${i}School`)" class="mosaic-edu-logo" @error="handleLogoError" />
                   <div class="mosaic-edu-meta">
                     <span class="mosaic-edu-degree">{{ t(`resume.edu${i}Title`) }}</span>
                     <span class="mosaic-edu-period">{{ t(`resume.edu${i}Period`) }}</span>
@@ -205,11 +205,12 @@
 import { ref, inject, watch, shallowRef, onMounted, onUnmounted } from 'vue'
 import { getCurrentLanguage, t as translate } from '../i18n'
 import { getCertImage, verifyCertPassword } from '../utils/certImages'
+import { assetUrl } from '../utils/assetUrl'
 
 const currentLanguage = inject('language', ref(getCurrentLanguage()))
 
-// 个人照片：public/profile.jpg，相对路径 /profile.jpg
-const photoSrc = ref('/profile.jpg')
+// 个人照片：public/profile.jpg，需带 base 以支持 GitHub Pages
+const photoSrc = ref(assetUrl('/profile.jpg'))
 const photoError = ref(false)
 
 // 证书弹窗（密码校验，仅内存，刷新后需重输）
@@ -222,8 +223,9 @@ const certPending = ref(null)
 const openCertModal = (section, index) => {
   const src = getCertImage(section, index)
   if (!src) return
+  const fullSrc = assetUrl(src)
   if (certUnlocked.value) {
-    certModalImage.value = src
+    certModalImage.value = fullSrc
   } else {
     certPending.value = { section, index }
     certPasswordInput.value = ''
@@ -244,7 +246,7 @@ const submitCertPassword = () => {
     closeCertPasswordModal()
     if (pending) {
       const src = getCertImage(pending.section, pending.index)
-      if (src) certModalImage.value = src
+      if (src) certModalImage.value = assetUrl(src)
     }
   } else {
     certPasswordError.value = true
