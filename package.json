@@ -1,23 +1,24 @@
 {
-    "name": "quant-trading-dapp",
-    "version": "1.0.0",
-    "description": "区块链风格的量化交易Dapp前端",
-    "type": "module",
-    "scripts": {
-        "dev": "vite",
-        "build": "vite build",
-        "preview": "vite preview",
-        "deploy": "npm run build && gh-pages -d dist"
-    },
-    "dependencies": {
-        "vue": "^3.4.0",
-        "vue-router": "^4.2.5",
-        "pinia": "^2.1.7",
-        "echarts": "^5.4.3",
-        "vue-echarts": "^6.6.1"
-    },
-    "devDependencies": {
-        "@vitejs/plugin-vue": "^5.0.0",
-        "vite": "^5.0.0"
-    }
+  "name": "cv-me",
+  "version": "1.0.0",
+  "description": "个人简历网站 - 多语言支持",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "deploy": "npm run build && gh-pages -d dist"
+  },
+  "dependencies": {
+    "@vueuse/core": "^14.2.1",
+    "@vueuse/integrations": "^14.2.1",
+    "pinia": "^2.1.7",
+    "sortablejs": "^1.15.7",
+    "vue": "^3.4.0",
+    "vue-router": "^4.2.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.0",
+    "vite": "^5.0.0"
+  }
 }

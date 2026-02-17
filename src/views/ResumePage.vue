@@ -1,50 +1,75 @@
 <template>
   <div class="resume-page">
     <div class="resume-container">
-      <div class="resume-header">
-        <h1 class="resume-title">{{ t('resume.title') }}</h1>
-      </div>
-      
-      <div class="resume-content">
-        <!-- 个人信息 - 弱化显示 -->
-        <div class="personal-info-compact">
-          <span class="info-name">{{ t('resume.name') }}</span>
-          <span class="info-separator">|</span>
-          <span class="info-email">{{ t('resume.email') }}</span>
-          <span class="info-separator">|</span>
-          <span class="info-location">{{ t('resume.location') }}</span>
-          <span class="info-separator">|</span>
-          <span class="info-wechat">{{ t('resume.wechatLabel') }} {{ t('resume.wechat') }}</span>
+      <!-- 简历头 + 个人简介 + 照片（跨栏目） -->
+      <div class="resume-hero">
+        <div class="resume-hero-main">
+          <header class="resume-header">
+            <div class="resume-header-inner">
+              <span class="resume-title">{{ t('resume.title') }}</span>
+              <span class="resume-subtitle">Portfolio</span>
+            </div>
+            <div class="resume-header-accent"></div>
+          </header>
+
+          <div class="personal-info-compact">
+            <span class="info-name">{{ t('resume.name') }}</span>
+            <template v-if="t('resume.phone')">
+              <span class="info-separator">|</span>
+              <span class="info-phone">{{ t('resume.phone') }}</span>
+            </template>
+            <span class="info-separator">|</span>
+            <span class="info-email">{{ t('resume.email') }}</span>
+            <template v-if="t('resume.location')">
+              <span class="info-separator">|</span>
+              <span class="info-location">{{ t('resume.location') }}</span>
+            </template>
+            <template v-if="t('resume.wechat')">
+              <span class="info-separator">|</span>
+              <span class="info-wechat">{{ t('resume.wechatLabel') }} {{ t('resume.wechat') }}</span>
+            </template>
+          </div>
+
+          <section class="resume-section resume-section-hero">
+            <h2 class="section-title"><span class="section-num">01</span>{{ t('resume.summary') }}</h2>
+            <p class="summary-text" v-html="highlightKeywords(t('resume.summaryText'))"></p>
+          </section>
         </div>
 
-        <!-- 个人简介 -->
-        <section class="resume-section">
-          <h2 class="section-title">{{ t('resume.summary') }}</h2>
-          <p class="summary-text" v-html="highlightKeywords(t('resume.summaryText'))"></p>
-        </section>
+        <div class="resume-hero-photo">
+          <div class="resume-photo-frame">
+            <img v-if="photoSrc" :src="photoSrc" :alt="t('resume.name')" class="resume-photo-img" />
+            <div v-else class="resume-photo-placeholder">
+              <span class="resume-photo-hint">Photo</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
+      <div class="resume-content">
         <!-- 专业资质和获奖荣誉 -->
         <section class="resume-section">
+          <h2 class="section-title"><span class="section-num">02</span>{{ t('resume.qualifications') }} & {{ t('resume.honors') }}</h2>
           <div class="qualifications-honors">
             <div class="qualifications-item">
-              <span class="qualifications-label">{{ t('resume.qualifications') }}：</span>
+              <span class="qualifications-label">{{ t('resume.qualifications') }}</span>
               <div class="tags-container">
-                <span 
-                  v-for="(tag, index) in parseTags(t('resume.qualificationsList'))" 
-                  :key="index" 
-                  class="cyber-tag cyber-tag-blue"
+                <span
+                  v-for="(tag, index) in parseTags(t('resume.qualificationsList'))"
+                  :key="index"
+                  class="design-tag design-tag-accent"
                 >
                   {{ tag }}
                 </span>
               </div>
             </div>
             <div class="honors-item">
-              <span class="honors-label">{{ t('resume.honors') }}：</span>
+              <span class="honors-label">{{ t('resume.honors') }}</span>
               <div class="tags-container">
-                <span 
-                  v-for="(tag, index) in parseTags(t('resume.honorsList'))" 
-                  :key="index" 
-                  class="cyber-tag cyber-tag-orange"
+                <span
+                  v-for="(tag, index) in parseTags(t('resume.honorsList'))"
+                  :key="index"
+                  class="design-tag design-tag-muted"
                 >
                   {{ tag }}
                 </span>
@@ -55,7 +80,7 @@
 
         <!-- 教育经历 -->
         <section class="resume-section">
-          <h2 class="section-title">{{ t('resume.education') }}</h2>
+          <h2 class="section-title"><span class="section-num">03</span>{{ t('resume.education') }}</h2>
           <div class="education-list">
             <div class="education-item">
               <div class="education-header">
@@ -68,6 +93,7 @@
               <div class="education-school">
                 <template v-if="currentLanguage === 'en'">{{ t('resume.edu1SchoolEn') }}</template>
                 <template v-else>{{ t('resume.edu1School') }} ({{ t('resume.edu1SchoolEn') }})</template>
+                <span v-if="t('resume.edu1Rank')" class="education-rank">{{ t('resume.edu1Rank') }}</span>
               </div>
               <div class="education-major">{{ t('resume.edu1Major') }}</div>
             </div>
@@ -82,6 +108,7 @@
               <div class="education-school">
                 <template v-if="currentLanguage === 'en'">{{ t('resume.edu2SchoolEn') }}</template>
                 <template v-else>{{ t('resume.edu2School') }} ({{ t('resume.edu2SchoolEn') }})</template>
+                <span v-if="t('resume.edu2Rank')" class="education-rank">{{ t('resume.edu2Rank') }}</span>
               </div>
               <div class="education-major">{{ t('resume.edu2Major') }}</div>
             </div>
@@ -96,6 +123,7 @@
               <div class="education-school">
                 <template v-if="currentLanguage === 'en'">{{ t('resume.edu3SchoolEn') }}</template>
                 <template v-else>{{ t('resume.edu3School') }} ({{ t('resume.edu3SchoolEn') }})</template>
+                <span v-if="t('resume.edu3Rank')" class="education-rank">{{ t('resume.edu3Rank') }}</span>
               </div>
               <div class="education-major">{{ t('resume.edu3Major') }}</div>
             </div>
@@ -110,6 +138,7 @@
               <div class="education-school">
                 <template v-if="currentLanguage === 'en'">{{ t('resume.edu4SchoolEn') }}</template>
                 <template v-else>{{ t('resume.edu4School') }} ({{ t('resume.edu4SchoolEn') }})</template>
+                <span v-if="t('resume.edu4Rank')" class="education-rank">{{ t('resume.edu4Rank') }}</span>
               </div>
               <div class="education-major">{{ t('resume.edu4Major') }}</div>
             </div>
@@ -118,81 +147,21 @@
 
         <!-- 项目经验 -->
         <section class="resume-section">
-          <h2 class="section-title">{{ t('resume.experience') }}</h2>
+          <h2 class="section-title"><span class="section-num">04</span>{{ t('resume.experience') }}</h2>
           <div class="experience-list">
-            <div class="experience-item">
+            <div class="experience-item" v-for="i in 5" :key="i" v-show="t(`resume.exp${i}Title`)">
               <div class="experience-header">
-                <h3 class="experience-title">{{ t('resume.exp1Title') }}</h3>
-                <span class="experience-period" v-if="t('resume.exp1Period')">{{ t('resume.exp1Period') }}</span>
+                <h3 class="experience-title">{{ t(`resume.exp${i}Title`) }}</h3>
+                <span class="experience-period" v-if="t(`resume.exp${i}Period`)">{{ t(`resume.exp${i}Period`) }}</span>
               </div>
-              <div class="experience-company" v-if="t('resume.exp1Company')">{{ t('resume.exp1Company') }}</div>
+              <div class="experience-company" v-if="t(`resume.exp${i}Company`)">{{ t(`resume.exp${i}Company`) }}</div>
               <ul class="experience-duties">
-                <li v-if="t('resume.exp1Duty1')">{{ t('resume.exp1Duty1') }}</li>
-                <li v-if="t('resume.exp1Duty2')">{{ t('resume.exp1Duty2') }}</li>
-                <li v-if="t('resume.exp1Duty3')">{{ t('resume.exp1Duty3') }}</li>
+                <li v-if="t(`resume.exp${i}Duty1`)">{{ t(`resume.exp${i}Duty1`) }}</li>
+                <li v-if="t(`resume.exp${i}Duty2`)">{{ t(`resume.exp${i}Duty2`) }}</li>
+                <li v-if="t(`resume.exp${i}Duty3`)">{{ t(`resume.exp${i}Duty3`) }}</li>
               </ul>
-              <div class="experience-tech" v-if="t('resume.exp1Tags')">
-                <span class="tech-tag" v-for="tag in t('resume.exp1Tags').split(',')" :key="tag">{{ tag }}</span>
-              </div>
-            </div>
-            <div class="experience-item">
-              <div class="experience-header">
-                <h3 class="experience-title">{{ t('resume.exp2Title') }}</h3>
-                <span class="experience-period" v-if="t('resume.exp2Period')">{{ t('resume.exp2Period') }}</span>
-              </div>
-              <div class="experience-company" v-if="t('resume.exp2Company')">{{ t('resume.exp2Company') }}</div>
-              <ul class="experience-duties">
-                <li v-if="t('resume.exp2Duty1')">{{ t('resume.exp2Duty1') }}</li>
-                <li v-if="t('resume.exp2Duty2')">{{ t('resume.exp2Duty2') }}</li>
-                <li v-if="t('resume.exp2Duty3')">{{ t('resume.exp2Duty3') }}</li>
-              </ul>
-              <div class="experience-tech" v-if="t('resume.exp2Tags')">
-                <span class="tech-tag" v-for="tag in t('resume.exp2Tags').split(',')" :key="tag">{{ tag }}</span>
-              </div>
-            </div>
-            <div class="experience-item">
-              <div class="experience-header">
-                <h3 class="experience-title">{{ t('resume.exp3Title') }}</h3>
-                <span class="experience-period" v-if="t('resume.exp3Period')">{{ t('resume.exp3Period') }}</span>
-              </div>
-              <div class="experience-company" v-if="t('resume.exp3Company')">{{ t('resume.exp3Company') }}</div>
-              <ul class="experience-duties">
-                <li v-if="t('resume.exp3Duty1')">{{ t('resume.exp3Duty1') }}</li>
-                <li v-if="t('resume.exp3Duty2')">{{ t('resume.exp3Duty2') }}</li>
-                <li v-if="t('resume.exp3Duty3')">{{ t('resume.exp3Duty3') }}</li>
-              </ul>
-              <div class="experience-tech" v-if="t('resume.exp3Tags')">
-                <span class="tech-tag" v-for="tag in t('resume.exp3Tags').split(',')" :key="tag">{{ tag }}</span>
-              </div>
-            </div>
-            <div class="experience-item">
-              <div class="experience-header">
-                <h3 class="experience-title">{{ t('resume.exp4Title') }}</h3>
-                <span class="experience-period" v-if="t('resume.exp4Period')">{{ t('resume.exp4Period') }}</span>
-              </div>
-              <div class="experience-company" v-if="t('resume.exp4Company')">{{ t('resume.exp4Company') }}</div>
-              <ul class="experience-duties">
-                <li v-if="t('resume.exp4Duty1')">{{ t('resume.exp4Duty1') }}</li>
-                <li v-if="t('resume.exp4Duty2')">{{ t('resume.exp4Duty2') }}</li>
-                <li v-if="t('resume.exp4Duty3')">{{ t('resume.exp4Duty3') }}</li>
-              </ul>
-              <div class="experience-tech" v-if="t('resume.exp4Tags')">
-                <span class="tech-tag" v-for="tag in t('resume.exp4Tags').split(',')" :key="tag">{{ tag }}</span>
-              </div>
-            </div>
-            <div class="experience-item">
-              <div class="experience-header">
-                <h3 class="experience-title">{{ t('resume.exp5Title') }}</h3>
-                <span class="experience-period" v-if="t('resume.exp5Period')">{{ t('resume.exp5Period') }}</span>
-              </div>
-              <div class="experience-company" v-if="t('resume.exp5Company')">{{ t('resume.exp5Company') }}</div>
-              <ul class="experience-duties">
-                <li v-if="t('resume.exp5Duty1')">{{ t('resume.exp5Duty1') }}</li>
-                <li v-if="t('resume.exp5Duty2')">{{ t('resume.exp5Duty2') }}</li>
-                <li v-if="t('resume.exp5Duty3')">{{ t('resume.exp5Duty3') }}</li>
-              </ul>
-              <div class="experience-tech" v-if="t('resume.exp5Tags')">
-                <span class="tech-tag" v-for="tag in t('resume.exp5Tags').split(',')" :key="tag">{{ tag }}</span>
+              <div class="experience-tech" v-if="t(`resume.exp${i}Tags`)">
+                <span class="tech-tag" v-for="tag in t(`resume.exp${i}Tags`).split(',')" :key="tag">{{ tag }}</span>
               </div>
             </div>
           </div>
@@ -200,7 +169,7 @@
 
         <!-- 技能 -->
         <section class="resume-section">
-          <h2 class="section-title">{{ t('resume.skills') }}</h2>
+          <h2 class="section-title"><span class="section-num">05</span>{{ t('resume.skills') }}</h2>
           <div class="skills-grid">
             <div class="skill-category">
               <h3 class="skill-category-title">{{ t('resume.productDesign') }}</h3>
@@ -265,30 +234,25 @@ import { getCurrentLanguage, t as translate } from '../i18n'
 
 const currentLanguage = inject('language', ref(getCurrentLanguage()))
 
+// 个人照片：设置路径即可显示，如 '/photo.jpg'，留空显示占位
+const photoSrc = ref('')
+
 const t = (key) => translate(key, currentLanguage.value)
 
 const handleLogoError = (event) => {
-  // 如果logo加载失败，隐藏图片
   event.target.style.display = 'none'
 }
 
-// 将文本转换为标签数组（用于专业资质和获奖荣誉）
 const parseTags = (text) => {
   if (!text) return []
-  // 根据语言自动选择分隔符
   const isEnglish = currentLanguage.value === 'en'
-  
   if (isEnglish) {
-    // 英文模式：智能选择分隔符
-    // 如果包含分号，优先使用分号（获奖荣誉）
-    // 否则使用逗号（专业资质）
     if (text.includes(';')) {
       return text.split(';').map(tag => tag.trim()).filter(tag => tag)
     } else {
       return text.split(',').map(tag => tag.trim()).filter(tag => tag)
     }
   } else {
-    // 中文模式：使用顿号和中文逗号分割
     let result = text.split('、').map(tag => tag.trim()).filter(tag => tag)
     const newResult = []
     result.forEach(item => {
@@ -298,86 +262,39 @@ const parseTags = (text) => {
   }
 }
 
-// 赛博朋克荧光色高亮关键字
+// 通用关键字高亮（可根据新内容在 i18n 旁补充 keywordGroups）
 const highlightKeywords = (text) => {
   if (!text) return ''
-  
-  // 定义关键字和对应的颜色类（按长度从长到短排序）
   const keywordGroups = [
-    // 技能类 - 科技蓝
-    { words: ['产品需求调研', '產品需求調研', 'product requirement research'], class: 'cyber-blue' },
-    { words: ['设计开发', '設計開發', 'design and development'], class: 'cyber-blue' },
-    { words: ['运营推广', '運營推廣', 'operations and promotion'], class: 'cyber-blue' },
     { words: ['项目管理', '項目管理', 'project management'], class: 'cyber-blue' },
-    { words: ['产品运营', '產品運營', 'product operations'], class: 'cyber-blue' },
-    { words: ['渠道推广', '渠道推廣', 'channel promotion'], class: 'cyber-blue' },
-    { words: ['市场营销', '市場營銷', 'marketing'], class: 'cyber-blue' },
+    { words: ['产品设计', '產品設計', 'product design'], class: 'cyber-blue' },
     { words: ['数据分析', '數據分析', 'data analysis'], class: 'cyber-blue' },
-    { words: ['战略规划', '戰略規劃', 'strategic planning'], class: 'cyber-blue' },
-    
-    // 技术类 - 科技蓝（与技术相关也用蓝色）
-    { words: ['数据资产管理', '數據資產管理', 'data asset management'], class: 'cyber-blue' },
-    { words: ['可视化中心', '可視化中心', 'visualization centers'], class: 'cyber-blue' },
-    { words: ['ERP'], class: 'cyber-blue' },
-    { words: ['CRM'], class: 'cyber-blue' },
-    { words: ['Dapp', 'DApp'], class: 'cyber-blue' },
-    
-    // 应用类 - 紫粉色
-    { words: ['营销工具应用', '營銷工具應用', 'marketing tool applications'], class: 'cyber-pink' },
-    { words: ['电商应用', '電商應用', 'e-commerce applications'], class: 'cyber-pink' },
-    
-    // 行业类 - 紫粉色
-    { words: ['医疗健康', '醫療健康', 'healthcare'], class: 'cyber-pink' },
-    { words: ['制造业', '製造業', 'manufacturing'], class: 'cyber-pink' },
-    { words: ['区块链', '區塊鏈', 'blockchain'], class: 'cyber-pink' },
-    { words: ['农业', '農業', 'agriculture'], class: 'cyber-pink' },
-    { words: ['外贸', '外貿', 'foreign trade'], class: 'cyber-pink' },
-    
-    // 经验类 - 橙色
+    { words: ['用户体验', '用戶體驗', 'user experience'], class: 'cyber-blue' },
+    { words: ['需求分析', '需求分析', 'requirement analysis'], class: 'cyber-blue' },
     { words: ['丰富经验', '豐富經驗', 'extensive experience'], class: 'cyber-orange' },
-    { words: ['实践与总结', '實踐與總結', 'practice and insights'], class: 'cyber-orange' },
   ]
-  
   let result = text
-  
-  // 按组处理关键字
   keywordGroups.forEach(({ words, class: colorClass }) => {
     words.forEach(keyword => {
-      // 转义特殊字符
       const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-      
-      // 收集所有匹配项
       const matches = []
       let match
       const tempRegex = new RegExp(escapedKeyword, 'gi')
-      
       while ((match = tempRegex.exec(result)) !== null) {
-        matches.push({
-          text: match[0],
-          index: match.index
-        })
+        matches.push({ text: match[0], index: match.index })
       }
-      
-      // 从后往前替换，避免索引偏移
       for (let i = matches.length - 1; i >= 0; i--) {
         const { text: matchText, index } = matches[i]
         const beforeText = result.substring(0, index)
         const afterText = result.substring(index + matchText.length)
-        
-        // 检查是否在HTML标签内
         const lastTagOpen = beforeText.lastIndexOf('<span')
         const lastTagClose = beforeText.lastIndexOf('</span>')
-        
-        // 如果不在标签内，则替换
         if (lastTagOpen <= lastTagClose) {
-          result = beforeText + 
-            `<span class="cyber-highlight ${colorClass}">${matchText}</span>` + 
-            afterText
+          result = beforeText + `<span class="cyber-highlight ${colorClass}">${matchText}</span>` + afterText
         }
       }
     })
   })
-  
   return result
 }
 </script>
@@ -386,33 +303,126 @@ const highlightKeywords = (text) => {
 .resume-page {
   min-height: 100vh;
   padding: var(--spacing-xl);
-  background: var(--bg-primary);
+  background: transparent;
 }
 
 .resume-container {
-  max-width: 900px;
+  max-width: 1000px;
   margin: 0 auto;
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
 .resume-header {
-  padding: var(--spacing-xl);
-  border-bottom: 1px solid var(--border-color);
+  padding: var(--spacing-xl) var(--spacing-xl) var(--spacing-lg);
+  position: relative;
+}
+
+.resume-header-inner {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
 }
 
 .resume-title {
-  font-family: var(--font-mono);
-  font-size: 24px;
+  font-family: var(--font-display);
+  font-size: 2rem;
   font-weight: 600;
   color: var(--text-primary);
-  margin: 0;
+  letter-spacing: 0.02em;
+}
+
+.resume-subtitle {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+
+.resume-header-accent {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 48px;
+  height: 3px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+
+/* 简历头 + 个人简介 + 照片（跨栏目） */
+.resume-hero {
+  display: flex;
+  gap: var(--spacing-xl);
+  padding: var(--spacing-xl) var(--spacing-xl) var(--spacing-lg);
+  align-items: flex-start;
+}
+
+.resume-hero-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.resume-hero-photo {
+  flex-shrink: 0;
+  position: sticky;
+  top: calc(var(--spacing-md) + 60px);
+}
+
+.resume-photo-frame {
+  width: 160px;
+  height: 200px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-card);
+}
+
+.resume-photo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.resume-photo-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-family: var(--font-sans);
+}
+
+.resume-photo-hint {
+  opacity: 0.6;
+}
+
+.resume-section-hero {
+  margin-bottom: 0;
+}
+
+@media (max-width: 768px) {
+  .resume-hero {
+    flex-direction: column;
+  }
+
+  .resume-hero-photo {
+    align-self: flex-start;
+    position: static;
+  }
 }
 
 .resume-content {
-  padding: var(--spacing-xl);
+  padding: 0 var(--spacing-xl) var(--spacing-xl);
 }
 
 .resume-section {
@@ -424,26 +434,37 @@ const highlightKeywords = (text) => {
 }
 
 .section-title {
-  font-family: var(--font-mono);
-  font-size: 18px;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
   font-weight: 600;
   color: var(--text-primary);
   margin-bottom: var(--spacing-md);
   padding-bottom: var(--spacing-sm);
-  border-bottom: 2px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
 }
 
-/* 个人信息 - 紧凑弱化样式 */
+.section-num {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--accent);
+  opacity: 0.9;
+}
+
 .personal-info-compact {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--spacing-sm);
-  padding: var(--spacing-sm) 0;
+  padding: var(--spacing-md) 0 var(--spacing-lg);
   margin-bottom: var(--spacing-lg);
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-muted);
   border-bottom: 1px solid var(--border-color);
+  font-family: var(--font-sans);
 }
 
 .personal-info-compact .info-name {
@@ -457,47 +478,13 @@ const highlightKeywords = (text) => {
 }
 
 .personal-info-compact .info-email {
-  color: var(--text-link);
+  color: var(--accent);
 }
 
+.personal-info-compact .info-phone,
 .personal-info-compact .info-location,
 .personal-info-compact .info-wechat {
   color: var(--text-secondary);
-}
-
-.info-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: var(--spacing-md);
-}
-
-.info-item {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-}
-
-.info-label {
-  font-size: 12px;
-  color: var(--text-muted);
-  font-family: var(--font-mono);
-}
-
-.info-value {
-  font-size: 14px;
-  color: var(--text-primary);
-}
-
-.info-link {
-  font-size: 14px;
-  color: var(--text-link);
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-.info-link:hover {
-  color: #79c0ff;
-  text-decoration: underline;
 }
 
 .summary-text {
@@ -507,7 +494,6 @@ const highlightKeywords = (text) => {
   white-space: pre-line;
 }
 
-/* 赛博朋克高亮样式（无发光效果） */
 .summary-text .cyber-highlight {
   position: relative;
   font-weight: 600;
@@ -517,61 +503,13 @@ const highlightKeywords = (text) => {
 }
 
 .summary-text .cyber-highlight.cyber-blue {
-  color: #5B9BD5 !important;
-  background: rgba(91, 155, 213, 0.15) !important;
-}
-
-.summary-text .cyber-highlight.cyber-green {
-  color: #5B9BD5 !important;
-  background: rgba(91, 155, 213, 0.15) !important;
-}
-
-.summary-text .cyber-highlight.cyber-pink {
-  color: #C77DFF !important;
-  background: rgba(199, 125, 255, 0.15) !important;
-}
-
-.summary-text .cyber-highlight.cyber-purple {
-  color: #C77DFF !important;
-  background: rgba(199, 125, 255, 0.15) !important;
+  color: var(--accent) !important;
+  background: var(--accent-soft) !important;
 }
 
 .summary-text .cyber-highlight.cyber-orange {
-  color: #F4A460 !important;
-  background: rgba(244, 164, 96, 0.15) !important;
-}
-
-/* 赛博朋克高亮样式（无发光效果） */
-.cyber-highlight {
-  position: relative;
-  font-weight: 600;
-  padding: 2px 4px;
-  border-radius: 3px;
-}
-
-.cyber-blue {
-  color: #5B9BD5;
-  background: rgba(91, 155, 213, 0.1);
-}
-
-.cyber-green {
-  color: #5B9BD5;
-  background: rgba(91, 155, 213, 0.1);
-}
-
-.cyber-pink {
-  color: #C77DFF;
-  background: rgba(199, 125, 255, 0.1);
-}
-
-.cyber-purple {
-  color: #C77DFF;
-  background: rgba(199, 125, 255, 0.1);
-}
-
-.cyber-orange {
-  color: #F4A460;
-  background: rgba(244, 164, 96, 0.1);
+  color: var(--accent) !important;
+  background: var(--accent-soft) !important;
 }
 
 .qualifications-honors {
@@ -600,48 +538,26 @@ const highlightKeywords = (text) => {
   gap: var(--spacing-xs);
 }
 
-.cyber-tag {
+.design-tag {
   display: inline-block;
-  padding: 4px 10px;
-  font-size: 11px;
+  padding: 5px 12px;
+  font-size: 12px;
   font-weight: 500;
-  border-radius: var(--radius-sm);
-  border: 1px solid;
-  transition: all 0.2s;
-  font-family: var(--font-mono);
+  border-radius: 20px;
+  transition: all 0.25s ease;
+  font-family: var(--font-sans);
 }
 
-.cyber-tag-blue {
-  color: #5B9BD5;
-  background: rgba(91, 155, 213, 0.1);
-  border-color: rgba(91, 155, 213, 0.4);
+.design-tag-accent {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-border);
 }
 
-.cyber-tag-blue:hover {
-  background: rgba(91, 155, 213, 0.15);
-  border-color: rgba(91, 155, 213, 0.5);
-}
-
-.cyber-tag-purple {
-  color: #C77DFF;
-  background: rgba(199, 125, 255, 0.1);
-  border-color: rgba(199, 125, 255, 0.4);
-}
-
-.cyber-tag-purple:hover {
-  background: rgba(199, 125, 255, 0.15);
-  border-color: rgba(199, 125, 255, 0.5);
-}
-
-.cyber-tag-orange {
-  color: #F4A460;
-  background: rgba(244, 164, 96, 0.1);
-  border-color: rgba(244, 164, 96, 0.4);
-}
-
-.cyber-tag-orange:hover {
-  background: rgba(244, 164, 96, 0.15);
-  border-color: rgba(244, 164, 96, 0.5);
+.design-tag-muted {
+  color: var(--text-secondary);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
 }
 
 .skills-grid {
@@ -657,6 +573,7 @@ const highlightKeywords = (text) => {
 }
 
 .skill-category-title {
+  font-family: var(--font-display);
   font-size: 14px;
   font-weight: 600;
   color: var(--text-primary);
@@ -670,20 +587,20 @@ const highlightKeywords = (text) => {
 }
 
 .skill-tag {
-  padding: 4px 10px;
+  padding: 5px 12px;
   font-size: 12px;
   background: var(--bg-tertiary);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
+  border-radius: 16px;
   color: var(--text-secondary);
-  font-family: var(--font-mono);
-  transition: all 0.2s;
+  font-family: var(--font-sans);
+  transition: all 0.25s ease;
 }
 
 .skill-tag:hover {
-  background: var(--bg-hover);
-  border-color: var(--tech-primary);
-  color: var(--text-primary);
+  background: var(--accent-soft);
+  border-color: var(--accent-border);
+  color: var(--accent);
 }
 
 .experience-list {
@@ -693,10 +610,15 @@ const highlightKeywords = (text) => {
 }
 
 .experience-item {
-  padding: var(--spacing-md);
+  padding: var(--spacing-lg);
   background: var(--bg-tertiary);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
+  transition: all 0.25s ease;
+}
+
+.experience-item:hover {
+  border-color: var(--border-hover);
 }
 
 .experience-header {
@@ -707,6 +629,7 @@ const highlightKeywords = (text) => {
 }
 
 .experience-title {
+  font-family: var(--font-display);
   font-size: 16px;
   font-weight: 600;
   color: var(--text-primary);
@@ -722,7 +645,7 @@ const highlightKeywords = (text) => {
 
 .experience-company {
   font-size: 14px;
-  color: var(--text-link);
+  color: var(--accent);
   margin-bottom: var(--spacing-sm);
 }
 
@@ -734,10 +657,6 @@ const highlightKeywords = (text) => {
   line-height: 1.8;
 }
 
-.experience-duties li {
-  margin-bottom: var(--spacing-xs);
-}
-
 .experience-tech {
   display: flex;
   flex-wrap: wrap;
@@ -747,65 +666,15 @@ const highlightKeywords = (text) => {
   border-top: 1px solid var(--border-color);
 }
 
-.project-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-lg);
-}
-
-.project-item {
-  padding: var(--spacing-md);
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-}
-
-.project-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--spacing-sm);
-}
-
-.project-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.project-link {
-  color: var(--text-link);
-  display: flex;
-  align-items: center;
-  transition: color 0.2s;
-}
-
-.project-link:hover {
-  color: #79c0ff;
-}
-
-.project-desc {
-  font-size: 14px;
-  color: var(--text-secondary);
-  line-height: 1.8;
-  margin-bottom: var(--spacing-sm);
-}
-
-.project-tech {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-xs);
-}
-
 .tech-tag {
-  padding: 3px 8px;
+  padding: 4px 10px;
   font-size: 11px;
-  background: rgba(99, 102, 241, 0.1);
-  border: 1px solid rgba(99, 102, 241, 0.3);
-  border-radius: var(--radius-sm);
-  color: var(--tech-primary);
-  font-family: var(--font-mono);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-border);
+  border-radius: 16px;
+  color: var(--accent);
+  font-family: var(--font-sans);
+  transition: all 0.2s ease;
 }
 
 .education-list {
@@ -821,10 +690,15 @@ const highlightKeywords = (text) => {
 }
 
 .education-item {
-  padding: var(--spacing-sm) var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-lg);
   background: var(--bg-tertiary);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
+  transition: all 0.25s ease;
+}
+
+.education-item:hover {
+  border-color: var(--border-hover);
 }
 
 .education-header {
@@ -851,7 +725,12 @@ const highlightKeywords = (text) => {
   filter: brightness(0) invert(1);
 }
 
+[data-theme="light"] .education-logo-westminster {
+  filter: brightness(0);
+}
+
 .education-title {
+  font-family: var(--font-display);
   font-size: 14px;
   font-weight: 600;
   color: var(--text-primary);
@@ -867,12 +746,18 @@ const highlightKeywords = (text) => {
 
 .education-school {
   font-size: 13px;
-  color: var(--text-link);
+  color: var(--accent);
   margin-bottom: 2px;
 }
 
 .education-major {
   font-size: 13px;
   color: var(--text-secondary);
+}
+
+.education-rank {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-left: 1.5em; /* ~4-6 空格 */
 }
 </style>

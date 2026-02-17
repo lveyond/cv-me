@@ -1,155 +1,86 @@
 <template>
   <div id="app">
-    <nav class="navbar">
-      <div class="navbar-brand">
-        <span class="brand-icon">⚡</span>
-        <span class="brand-text">QuantDApp</span>
-        <span class="brand-badge">v1.3.1</span>
-      </div>
-      <div class="navbar-nav">
-        <svg width="0" height="0" style="position: absolute;">
-          <defs>
-            <linearGradient id="gradient-active" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" />
-              <stop offset="50%" style="stop-color:#8b5cf6;stop-opacity:1" />
-              <stop offset="100%" style="stop-color:#a855f7;stop-opacity:1" />
-            </linearGradient>
-          </defs>
-        </svg>
-        <router-link 
-          v-for="item in navItems" 
-          :key="item.path"
-          :to="item.path"
-          class="nav-link"
-          :class="{ active: isRouteActive(item.path) }"
-        >
-          <span class="nav-icon" v-html="item.icon"></span>
-          <span class="nav-text">{{ item.name }}</span>
-        </router-link>
-      </div>
-      <div class="navbar-actions">
-        <div class="language-selector">
-          <select v-model="currentLanguage" @change="changeLanguage" class="language-select">
-            <option value="zh-CN">简体中文</option>
-            <option value="zh-HK">繁體中文（港）</option>
-            <option value="en">English</option>
-          </select>
+    <header class="header">
+      <div class="header-content">
+        <div class="header-actions">
+          <router-link v-if="route.name === 'Resume'" to="/mosaic" class="style-link style-link-mosaic">
+            <span class="mosaic-arrow" aria-hidden="true">→</span>
+            <span class="mosaic-label">Mosaic</span>
+            <span class="mosaic-hint">{{ t('mosaicHint') }}</span>
+          </router-link>
+          <router-link v-else-if="route.name === 'ResumeMosaic'" to="/" class="style-link">Classic</router-link>
+          <button
+            v-if="route.name === 'Resume' || route.name === 'ResumeMosaic'"
+            type="button"
+            class="theme-toggle"
+            :title="theme === 'dark' ? '切换浅色' : '切换深色'"
+            @click="toggleTheme"
+            aria-label="切换主题"
+          >
+            <span v-if="theme === 'dark'" class="theme-icon">☀</span>
+            <span v-else class="theme-icon">☽</span>
+          </button>
+          <div class="language-selector">
+            <select v-model="currentLanguage" @change="changeLanguage" class="language-select">
+              <option value="zh-CN">简体中文</option>
+              <option value="zh-HK">繁體中文（港）</option>
+              <option value="en">English</option>
+            </select>
+          </div>
         </div>
-        <div class="wallet-status">
-          <span class="status-dot"></span>
-          <span class="status-text">{{ translate('common.notConnected', currentLanguage) }}</span>
-        </div>
-        <button class="btn btn-primary">{{ translate('common.connectWallet', currentLanguage) }}</button>
       </div>
-    </nav>
-    
-    <main class="main-content">
+    </header>
+
+    <main class="main-content" :class="{ 'main-content-mosaic': route.name === 'ResumeMosaic' }">
       <router-view />
     </main>
-    
+
     <footer class="footer">
       <div class="footer-content">
         <span class="footer-text">GitHub: <a href="https://github.com/lveyond" target="_blank" rel="noopener noreferrer" class="footer-link">@lveyond</a></span>
-        <span class="footer-separator">|</span>
-        <span class="footer-text">Built with ❤️ for DeFi</span>
-        <span class="footer-separator">|</span>
-        <button class="resume-trigger" @click="showResume = true" :title="translate('resume.title', currentLanguage)">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-            <polyline points="14 2 14 8 20 8"></polyline>
-            <line x1="16" y1="13" x2="8" y2="13"></line>
-            <line x1="16" y1="17" x2="8" y2="17"></line>
-            <polyline points="10 9 9 9 8 9"></polyline>
-          </svg>
-        </button>
       </div>
     </footer>
-    
-    <Resume :show="showResume" @close="showResume = false" />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, provide } from 'vue'
+import { ref, provide, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { getCurrentLanguage, setCurrentLanguage, t as translate } from './i18n'
-import Resume from './views/Resume.vue'
-
-const route = useRoute()
 
 const currentLanguage = ref(getCurrentLanguage())
-const showResume = ref(false)
+const route = useRoute()
+
+const THEME_KEY = 'cv-me-theme'
+const theme = ref(localStorage.getItem(THEME_KEY) || 'dark')
+
+const applyTheme = (val) => {
+  document.documentElement.setAttribute('data-theme', val)
+}
+
+const toggleTheme = () => {
+  theme.value = theme.value === 'dark' ? 'light' : 'dark'
+  localStorage.setItem(THEME_KEY, theme.value)
+  applyTheme(theme.value)
+}
+
+onMounted(() => {
+  applyTheme(theme.value)
+})
 
 const changeLanguage = (event) => {
   const lang = event.target.value
   setCurrentLanguage(lang)
   currentLanguage.value = lang
-  // 触发全局更新
   window.dispatchEvent(new CustomEvent('language-changed', { detail: lang }))
 }
 
-// 提供语言和翻译函数给子组件
 provide('language', currentLanguage)
 provide('t', translate)
 
-const navItems = computed(() => [
-  { 
-    path: '/', 
-    name: translate('nav.dashboard', currentLanguage.value), 
-    icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>`
-  },
-  { 
-    path: '/trading', 
-    name: translate('nav.trading', currentLanguage.value), 
-    icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>`
-  },
-  { 
-    path: '/strategies', 
-    name: translate('nav.strategies', currentLanguage.value), 
-    icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="9" y1="9" x2="21" y2="9"></line><line x1="9" y1="15" x2="21" y2="15"></line></svg>`
-  },
-  { 
-    path: '/assets', 
-    name: translate('nav.assets', currentLanguage.value), 
-    icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12c0 1.66-1.34 3-3 3H6c-1.66 0-3-1.34-3-3s1.34-3 3-3h12c1.66 0 3 1.34 3 3z"></path><path d="M6 8h12"></path><path d="M6 16h12"></path><circle cx="12" cy="12" r="1"></circle></svg>`
-  },
-  { 
-    path: '/analytics', 
-    name: translate('nav.analytics', currentLanguage.value), 
-    icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 6 13.5 14.5 8.5 9.5 2 16"></polyline><polyline points="16 6 22 6 22 12"></polyline></svg>`
-  },
-  { 
-    path: '/community', 
-    name: translate('nav.community', currentLanguage.value), 
-    icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>`
-  },
-  { 
-    path: '/game', 
-    name: translate('nav.game', currentLanguage.value), 
-    icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>`
-  }
-])
+const t = (key) => translate(key, currentLanguage.value)
 
-// 判断路由是否激活（使用路由名称更可靠，route 是响应式的）
-const isRouteActive = (path) => {
-  const currentPath = route.path
-  const currentName = route.name
-  
-  // 如果是仪表盘路径，检查路由名称或路径
-  if (path === '/') {
-    return currentName === 'Dashboard' || currentPath === '/' || currentPath === '/dashboard' || currentPath.startsWith('/dashboard')
-  }
-  
-  // 标准化路径比较
-  const normalizedCurrentPath = currentPath === '/' ? '/' : currentPath.replace(/\/$/, '')
-  const normalizedPath = path === '/' ? '/' : path.replace(/\/$/, '')
-  
-  return normalizedCurrentPath === normalizedPath
-}
-
-// 监听语言变化，更新导航项
 window.addEventListener('language-changed', () => {
-  // 强制重新渲染
   currentLanguage.value = getCurrentLanguage()
 })
 </script>
@@ -169,149 +100,138 @@ window.addEventListener('language-changed', () => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: 
-    radial-gradient(ellipse at top left, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
-    radial-gradient(ellipse at bottom right, rgba(139, 92, 246, 0.06) 0%, transparent 50%),
-    linear-gradient(135deg, #050810 0%, #0a0e1a 15%, #0d1117 30%, #0f1419 45%, #11151c 50%, #0f1419 55%, #0d1117 70%, #0a0e1a 85%, #050810 100%);
-  background-size: 300% 300%, 300% 300%, 300% 300%;
-  animation: gradientShift 20s ease infinite;
+  background:
+    radial-gradient(ellipse at top left, rgba(224, 122, 95, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at bottom right, rgba(139, 92, 246, 0.04) 0%, transparent 50%);
   z-index: -1;
   pointer-events: none;
 }
 
-@keyframes gradientShift {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
+[data-theme="light"] #app::before {
+  background:
+    radial-gradient(ellipse at top right, rgba(193, 127, 106, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at bottom left, rgba(193, 127, 106, 0.04) 0%, transparent 50%);
 }
 
-.navbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.header {
   padding: var(--spacing-md) var(--spacing-xl);
-  background: rgba(22, 27, 34, 0.8);
+  background: color-mix(in srgb, var(--bg-secondary) 85%, transparent);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--border-color);
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05);
+  transition: background 0.3s, border-color 0.3s;
 }
 
-.navbar-brand {
+.header-content {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
-  font-family: var(--font-mono);
-  font-weight: 600;
-  font-size: 16px;
+  justify-content: flex-end;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
-.brand-icon {
-  font-size: 20px;
-}
-
-.brand-text {
-  color: var(--text-primary);
-  font-family: 'PingFang SC', 'PingFang TC', 'Noto Sans SC', 'Microsoft YaHei UI', 'Microsoft YaHei', '微软雅黑', 'SimHei', '黑体', 'Microsoft JhengHei', '微軟正黑體', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
-}
-
-.brand-badge {
-  padding: 2px 6px;
-  font-size: 11px;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  color: var(--text-secondary);
-}
-
-.navbar-nav {
-  display: flex;
-  gap: var(--spacing-sm);
-}
-
-.nav-link {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  padding: var(--spacing-sm) var(--spacing-md);
-  font-size: 13px;
-  color: var(--text-secondary);
-  border-radius: var(--radius-md);
-  transition: all 0.2s;
-}
-
-.nav-link .nav-text {
-  font-family: 'PingFang SC', 'PingFang TC', 'Noto Sans SC', 'Microsoft YaHei UI', 'Microsoft YaHei', '微软雅黑', 'SimHei', '黑体', 'Microsoft JhengHei', '微軟正黑體', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
-}
-
-.nav-link:hover {
-  background: var(--bg-hover);
-  color: var(--text-primary);
-  text-decoration: none;
-}
-
-.nav-link.active {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
-}
-
-.nav-link.active .nav-icon {
-  color: #6366f1;
-}
-
-.nav-link.active .nav-icon svg {
-  stroke: url(#gradient-active);
-  filter: drop-shadow(0 0 3px rgba(99, 102, 241, 0.6));
-}
-
-.nav-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 16px;
-  height: 16px;
-  color: currentColor;
-  transition: all 0.3s;
-}
-
-.nav-icon svg {
-  width: 100%;
-  height: 100%;
-  transition: all 0.3s;
-}
-
-.nav-link.active .nav-icon svg {
-  stroke: url(#gradient-active);
-  filter: drop-shadow(0 0 2px rgba(99, 102, 241, 0.5));
-}
-
-.navbar-actions {
+.header-actions {
   display: flex;
   align-items: center;
   gap: var(--spacing-md);
 }
 
-.language-selector {
+.style-link {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-decoration: none;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-md);
+  transition: all 0.2s;
+}
+
+.style-link:hover {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+/* Mosaic 引导：动态箭头 + 高亮 */
+.style-link-mosaic {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--accent) !important;
+  background: var(--accent-soft) !important;
+  border: 1px solid var(--accent-border);
+  animation: mosaic-pulse 2s ease-in-out infinite;
+}
+
+.style-link-mosaic:hover {
+  background: var(--accent-soft) !important;
+  border-color: var(--accent);
+  animation: none;
+  box-shadow: none;
+}
+
+.mosaic-arrow {
+  font-size: 14px;
+  font-weight: 700;
+  animation: mosaic-arrow-bounce 1.2s ease-in-out infinite;
+}
+
+.mosaic-label {
+  font-weight: 600;
+}
+
+.mosaic-hint {
+  font-size: 10px;
+  opacity: 0.85;
+  font-weight: 500;
+}
+
+@keyframes mosaic-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(224, 122, 95, 0.35); }
+  50% { box-shadow: 0 0 0 8px rgba(224, 122, 95, 0); }
+}
+
+[data-theme="light"] .style-link-mosaic {
+  animation-name: mosaic-pulse-light;
+}
+
+@keyframes mosaic-pulse-light {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(193, 127, 106, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(193, 127, 106, 0); }
+}
+
+@keyframes mosaic-arrow-bounce {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(4px); }
+}
+
+.theme-toggle {
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.theme-toggle:hover {
+  color: var(--accent);
+  border-color: var(--accent-border);
+  background: var(--accent-soft);
 }
 
 .language-select {
   padding: var(--spacing-xs) var(--spacing-sm);
   font-size: 12px;
-  background: rgba(22, 27, 34, 0.6);
-  backdrop-filter: blur(10px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   color: var(--text-primary);
   font-family: var(--font-mono);
@@ -320,39 +240,8 @@ window.addEventListener('language-changed', () => {
 }
 
 .language-select:hover {
-  border-color: rgba(255, 255, 255, 0.2);
-  background: rgba(22, 27, 34, 0.8);
-}
-
-.language-select:focus {
-  outline: none;
-  border-color: var(--tech-primary);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-}
-
-.wallet-status {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-
-.wallet-status .status-text {
-  font-family: 'PingFang SC', 'PingFang TC', 'Noto Sans SC', 'Microsoft YaHei UI', 'Microsoft YaHei', '微软雅黑', 'SimHei', '黑体', 'Microsoft JhengHei', '微軟正黑體', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
-}
-
-.status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--danger);
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  border-color: var(--border-hover);
+  background: var(--bg-hover);
 }
 
 .main-content {
@@ -363,12 +252,18 @@ window.addEventListener('language-changed', () => {
   margin: 0 auto;
 }
 
+.main-content-mosaic {
+  max-width: none;
+  padding: var(--spacing-md) max(20px, 3vw);
+}
+
 .footer {
   padding: var(--spacing-md) var(--spacing-xl);
-  background: rgba(22, 27, 34, 0.6);
+  background: color-mix(in srgb, var(--bg-secondary) 85%, transparent);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid var(--border-color);
+  transition: background 0.3s, border-color 0.3s;
 }
 
 .footer-content {
@@ -380,51 +275,14 @@ window.addEventListener('language-changed', () => {
   color: var(--text-muted);
 }
 
-.footer-content .footer-text {
-  font-family: 'PingFang SC', 'PingFang TC', 'Noto Sans SC', 'Microsoft YaHei UI', 'Microsoft YaHei', '微软雅黑', 'SimHei', '黑体', 'Microsoft JhengHei', '微軟正黑體', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
-}
-
-.footer-content .mono {
-  font-family: var(--font-mono) !important;
-}
-
-.footer-separator {
-  color: var(--border-color);
-}
-
 .footer-link {
   color: var(--text-link);
   text-decoration: none;
-  transition: color 0.2s, opacity 0.2s;
+  transition: color 0.2s;
 }
 
 .footer-link:hover {
-  color: #79c0ff;
+  color: var(--accent);
   text-decoration: underline;
-  opacity: 0.9;
-}
-
-.resume-trigger {
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  padding: var(--spacing-xs);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-md);
-  transition: all 0.2s;
-  margin-left: var(--spacing-xs);
-}
-
-.resume-trigger:hover {
-  color: var(--text-link);
-  background: rgba(99, 102, 241, 0.1);
-}
-
-.resume-trigger svg {
-  width: 16px;
-  height: 16px;
 }
 </style>

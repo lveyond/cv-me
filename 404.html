@@ -2,18 +2,16 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>QuantDApp</title>
+    <title>Meiko LYU - 简历</title>
     <script>
-      // 单页应用 404 处理
-      // 将所有路径重定向到 index.html，让 Vue Router 处理路由
+      // 哈希路由 SPA 404 处理：将错误路径重定向到应用入口
       var path = window.location.pathname;
-      var hash = window.location.hash;
+      var hash = window.location.hash || '#/';
       var search = window.location.search;
-      
-      // 如果路径不是根路径，重定向到根路径并保留 hash 和 search
-      if (path !== '/') {
-        window.location.replace('/' + hash + search);
-      }
+      // 提取 base（如 /qt/、/cv-me/），根路径用 /
+      var parts = path.split('/').filter(Boolean);
+      var base = parts.length > 0 ? '/' + parts[0] + '/' : '/';
+      window.location.replace(base + search + hash);
     </script>
   </head>
   <body>
