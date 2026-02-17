@@ -88,7 +88,7 @@
             <div class="education-item">
               <div class="education-header">
                 <div class="education-header-left">
-                  <img v-if="t('resume.edu2Logo')" :src="t('resume.edu2Logo')" :alt="t('resume.edu2School')" class="education-logo education-logo-westminster" @error="handleLogoError" />
+                  <img v-if="t('resume.edu2Logo')" :src="t('resume.edu2Logo')" :alt="t('resume.edu2School')" class="education-logo" @error="handleLogoError" />
                   <h3 class="education-title">{{ t('resume.edu2Title') }}</h3>
                 </div>
                 <span class="education-period">{{ t('resume.edu2Period') }}</span>
@@ -407,7 +407,6 @@ const highlightKeywords = (text) => {
 .education-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
 .education-header-left { display: flex; align-items: center; gap: var(--spacing-sm); }
 .education-logo { width: 24px; height: 24px; object-fit: contain; border-radius: var(--radius-sm); }
-.education-logo-westminster { filter: brightness(0) invert(1); }
 .education-title { font-size: 14px; font-weight: 600; color: var(--text-primary); margin: 0; }
 .education-period { font-size: 11px; color: var(--text-muted); font-family: var(--font-mono); white-space: nowrap; }
 .education-school { font-size: 13px; color: var(--text-link); margin-bottom: 2px; }

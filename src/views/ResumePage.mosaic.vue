@@ -18,13 +18,13 @@
         @click="onCardClick(card.id)"
       >
         <div class="mosaic-card-handle" title="拖拽移动位置" @mousedown="onCardMouseDown($event, card.id)">
-          <span class="mosaic-card-drag-icon">⋮⋮</span>
+          <span class="mosaic-card-drag-icon">⋮⋮⋮⋮⋮⋮⋮</span>
         </div>
 
         <template v-if="card.id === 'photo'">
           <div class="mosaic-photo-wrap mosaic-polaroid">
             <div class="mosaic-photo">
-              <img v-if="photoSrc" :src="photoSrc" :alt="t('resume.name')" class="mosaic-photo-img" />
+              <img v-if="photoSrc && !photoError" :src="photoSrc" :alt="t('resume.name')" class="mosaic-photo-img" @error="photoError = true" />
               <div v-else class="mosaic-photo-placeholder">
                 <span class="mosaic-photo-hint">Photo</span>
               </div>
@@ -71,13 +71,23 @@
             <div class="mosaic-tags-row">
               <span class="mosaic-tag-label">{{ t('resume.qualifications') }}</span>
               <div class="mosaic-tags">
-                <span v-for="(tag, i) in parseTags(t('resume.qualificationsList'))" :key="i" class="mosaic-tag mosaic-tag-fill">{{ tag }}</span>
+                <span
+                v-for="(tag, i) in parseTags(t('resume.qualificationsList'))"
+                :key="i"
+                :class="['mosaic-tag', 'mosaic-tag-fill', getCertImage('qualifications', i) && 'mosaic-tag-clickable']"
+                @click.stop="openCertModal('qualifications', i)"
+              >{{ tag }}</span>
               </div>
             </div>
             <div class="mosaic-tags-row">
               <span class="mosaic-tag-label">{{ t('resume.honors') }}</span>
               <div class="mosaic-tags">
-                <span v-for="(tag, i) in parseTags(t('resume.honorsList'))" :key="i" class="mosaic-tag mosaic-tag-outline">{{ tag }}</span>
+                <span
+                v-for="(tag, i) in parseTags(t('resume.honorsList'))"
+                :key="i"
+                :class="['mosaic-tag', 'mosaic-tag-outline', getCertImage('honors', i) && 'mosaic-tag-clickable']"
+                @click.stop="openCertModal('honors', i)"
+              >{{ tag }}</span>
               </div>
             </div>
           </div>
@@ -92,7 +102,7 @@
             <div class="mosaic-edu-grid">
               <article v-for="i in 4" :key="i" class="mosaic-edu-card">
                 <div class="mosaic-edu-header">
-                  <img v-if="t(`resume.edu${i}Logo`)" :src="t(`resume.edu${i}Logo`)" :alt="t(`resume.edu${i}School`)" :class="['mosaic-edu-logo', i === 2 ? 'mosaic-edu-logo-dark' : '']" @error="handleLogoError" />
+                  <img v-if="t(`resume.edu${i}Logo`)" :src="t(`resume.edu${i}Logo`)" :alt="t(`resume.edu${i}School`)" class="mosaic-edu-logo" @error="handleLogoError" />
                   <div class="mosaic-edu-meta">
                     <span class="mosaic-edu-degree">{{ t(`resume.edu${i}Title`) }}</span>
                     <span class="mosaic-edu-period">{{ t(`resume.edu${i}Period`) }}</span>
@@ -153,17 +163,101 @@
         </template>
       </div>
     </main>
+
+    <!-- 证书密码弹窗 -->
+    <Teleport to="body">
+      <Transition name="cert-modal">
+        <div v-if="certPasswordModal" class="cert-modal-overlay" @click="closeCertPasswordModal">
+          <div class="cert-modal-content cert-password-box" @click.stop>
+            <h3 class="cert-password-title">{{ t('certPasswordPrompt') }}</h3>
+            <input
+              v-model="certPasswordInput"
+              type="password"
+              class="cert-password-input"
+              :placeholder="t('certPasswordPrompt')"
+              @keydown.enter="submitCertPassword"
+            />
+            <p v-if="certPasswordError" class="cert-password-err">{{ t('certPasswordError') }}</p>
+            <div class="cert-password-actions">
+              <button type="button" class="cert-password-btn cert-password-cancel" @click="closeCertPasswordModal">{{ t('certPasswordCancel') }}</button>
+              <button type="button" class="cert-password-btn cert-password-submit" @click="submitCertPassword">{{ t('certPasswordSubmit') }}</button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- 证书图片弹窗 -->
+    <Teleport to="body">
+      <Transition name="cert-modal">
+        <div v-if="certModalImage" class="cert-modal-overlay cert-modal-protect" @click="certModalImage = null" @contextmenu.prevent>
+          <div class="cert-modal-content" @click.stop @contextmenu.prevent>
+            <img :src="certModalImage" :alt="''" class="cert-modal-img" draggable="false" @contextmenu.prevent />
+            <button type="button" class="cert-modal-close" @click="certModalImage = null" aria-label="关闭">×</button>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
 <script setup>
-import { ref, inject, watch, shallowRef, onMounted } from 'vue'
+import { ref, inject, watch, shallowRef, onMounted, onUnmounted } from 'vue'
 import { getCurrentLanguage, t as translate } from '../i18n'
+import { getCertImage, verifyCertPassword } from '../utils/certImages'
 
 const currentLanguage = inject('language', ref(getCurrentLanguage()))
 
-// 个人照片：设置路径即可显示，如 '/photo.jpg'，留空显示占位
-const photoSrc = ref('')
+// 个人照片：public/profile.jpg，相对路径 /profile.jpg
+const photoSrc = ref('/profile.jpg')
+const photoError = ref(false)
+
+// 证书弹窗（密码校验，仅内存，刷新后需重输）
+const certUnlocked = ref(false)
+const certModalImage = ref(null)
+const certPasswordModal = ref(false)
+const certPasswordInput = ref('')
+const certPasswordError = ref(false)
+const certPending = ref(null)
+const openCertModal = (section, index) => {
+  const src = getCertImage(section, index)
+  if (!src) return
+  if (certUnlocked.value) {
+    certModalImage.value = src
+  } else {
+    certPending.value = { section, index }
+    certPasswordInput.value = ''
+    certPasswordError.value = false
+    certPasswordModal.value = true
+  }
+}
+const closeCertPasswordModal = () => {
+  certPasswordModal.value = false
+  certPending.value = null
+  certPasswordInput.value = ''
+  certPasswordError.value = false
+}
+const submitCertPassword = () => {
+  if (verifyCertPassword(certPasswordInput.value)) {
+    certUnlocked.value = true
+    const pending = certPending.value
+    closeCertPasswordModal()
+    if (pending) {
+      const src = getCertImage(pending.section, pending.index)
+      if (src) certModalImage.value = src
+    }
+  } else {
+    certPasswordError.value = true
+  }
+}
+const onCertKeydown = (e) => {
+  if (e.key === 'Escape') {
+    certModalImage.value = null
+    closeCertPasswordModal()
+  }
+}
+onMounted(() => { window.addEventListener('keydown', onCertKeydown) })
+onUnmounted(() => { window.removeEventListener('keydown', onCertKeydown) })
 
 const CARD_ORDER_KEY = 'cv-mosaic-card-order'
 const CARD_POSITIONS_KEY = 'cv-mosaic-card-positions'
@@ -191,13 +285,14 @@ const getDefaultPositions = (canvasWidth) => {
   const col3Wide = Math.max(col1, w - cardWide - gap)
   const row1 = 0
   const row2 = 300
+  const skillsOffset = 48
   return {
     photo: { x: col1, y: row1 },
     summary: { x: col2, y: row1 },
     qualifications: { x: col3, y: row1 },
     education: { x: col1, y: row2 },
     experience: { x: col2, y: row2 },
-    skills: { x: col3Wide, y: row2 }
+    skills: { x: Math.max(col1, col3Wide - skillsOffset), y: row2 }
   }
 }
 
@@ -404,6 +499,7 @@ const highlightKeywords = (text) => {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
 }
 
 .mosaic-photo-placeholder {
@@ -540,17 +636,18 @@ const highlightKeywords = (text) => {
 
 .mosaic-card-handle {
   position: absolute;
-  top: var(--spacing-sm);
-  right: var(--spacing-sm);
-  width: 32px;
-  height: 32px;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2cm;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--text-muted);
   cursor: grab;
   opacity: 0.6;
-  border-radius: 6px;
+  border-radius: 0 0 6px 6px;
   transition: opacity 0.2s, background 0.2s;
   user-select: none;
 }
@@ -565,8 +662,8 @@ const highlightKeywords = (text) => {
 }
 
 .mosaic-card-drag-icon {
-  font-size: 14px;
-  letter-spacing: -2px;
+  font-size: 12px;
+  letter-spacing: 2px;
 }
 
 .mosaic-card-ghost {
@@ -702,6 +799,14 @@ const highlightKeywords = (text) => {
   border: 1px solid var(--border-color);
 }
 
+.mosaic-tag-clickable {
+  cursor: pointer;
+}
+
+.mosaic-tag-clickable:hover {
+  filter: brightness(1.08);
+}
+
 /* 教育 */
 .mosaic-edu-grid {
   display: flex;
@@ -727,14 +832,6 @@ const highlightKeywords = (text) => {
   width: 24px;
   height: 24px;
   object-fit: contain;
-}
-
-.mosaic-edu-logo-dark {
-  filter: brightness(0) invert(1);
-}
-
-[data-theme="light"] .mosaic-edu-logo-dark {
-  filter: brightness(0);
 }
 
 .mosaic-edu-meta {
@@ -883,5 +980,145 @@ const highlightKeywords = (text) => {
 /* 技能组需要翻译 key */
 .mosaic-skill-tag {
   font-family: var(--font-sans);
+}
+
+/* 证书弹窗 */
+.cert-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  cursor: pointer;
+}
+
+.cert-modal-content {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+  cursor: default;
+}
+
+.cert-modal-img {
+  max-width: 100%;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+  pointer-events: none;
+}
+
+.cert-modal-close {
+  position: absolute;
+  top: -40px;
+  right: 0;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-size: 24px;
+  line-height: 1;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.cert-modal-close:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.cert-modal-enter-active,
+.cert-modal-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.cert-modal-enter-from,
+.cert-modal-leave-to {
+  opacity: 0;
+}
+
+/* 证书密码弹窗 */
+.cert-password-box {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-xl);
+  min-width: 280px;
+}
+
+.cert-password-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-md);
+}
+
+.cert-password-input {
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: 14px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.cert-password-input:focus {
+  outline: none;
+  border-color: var(--accent-border);
+}
+
+.cert-password-err {
+  font-size: 12px;
+  color: var(--accent);
+  margin: 0 0 var(--spacing-sm);
+}
+
+.cert-password-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  justify-content: flex-end;
+  margin-top: var(--spacing-md);
+}
+
+.cert-password-btn {
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-size: 13px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cert-password-cancel {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+.cert-password-cancel:hover {
+  border-color: var(--border-hover);
+}
+
+.cert-password-submit {
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: #fff;
+}
+
+.cert-password-submit:hover {
+  filter: brightness(1.1);
 }
 </style>

@@ -38,7 +38,7 @@
 
         <div class="resume-hero-photo">
           <div class="resume-photo-frame">
-            <img v-if="photoSrc" :src="photoSrc" :alt="t('resume.name')" class="resume-photo-img" />
+            <img v-if="photoSrc && !photoError" :src="photoSrc" :alt="t('resume.name')" class="resume-photo-img" @error="photoError = true" />
             <div v-else class="resume-photo-placeholder">
               <span class="resume-photo-hint">Photo</span>
             </div>
@@ -57,7 +57,8 @@
                 <span
                   v-for="(tag, index) in parseTags(t('resume.qualificationsList'))"
                   :key="index"
-                  class="design-tag design-tag-accent"
+                  :class="['design-tag', 'design-tag-accent', getCertImage('qualifications', index) && 'design-tag-clickable']"
+                  @click="openCertModal('qualifications', index)"
                 >
                   {{ tag }}
                 </span>
@@ -69,7 +70,8 @@
                 <span
                   v-for="(tag, index) in parseTags(t('resume.honorsList'))"
                   :key="index"
-                  class="design-tag design-tag-muted"
+                  :class="['design-tag', 'design-tag-muted', getCertImage('honors', index) && 'design-tag-clickable']"
+                  @click="openCertModal('honors', index)"
                 >
                   {{ tag }}
                 </span>
@@ -100,7 +102,7 @@
             <div class="education-item">
               <div class="education-header">
                 <div class="education-header-left">
-                  <img v-if="t('resume.edu2Logo')" :src="t('resume.edu2Logo')" :alt="t('resume.edu2School')" class="education-logo education-logo-westminster" @error="handleLogoError" />
+                  <img v-if="t('resume.edu2Logo')" :src="t('resume.edu2Logo')" :alt="t('resume.edu2School')" class="education-logo" @error="handleLogoError" />
                   <h3 class="education-title">{{ t('resume.edu2Title') }}</h3>
                 </div>
                 <span class="education-period">{{ t('resume.edu2Period') }}</span>
@@ -225,17 +227,106 @@
         </section>
       </div>
     </div>
+
+    <!-- 证书密码弹窗 -->
+    <Teleport to="body">
+      <Transition name="cert-modal">
+        <div v-if="certPasswordModal" class="cert-modal-overlay" @click="closeCertPasswordModal">
+          <div class="cert-modal-content cert-password-box" @click.stop>
+            <h3 class="cert-password-title">{{ t('certPasswordPrompt') }}</h3>
+            <input
+              v-model="certPasswordInput"
+              type="password"
+              class="cert-password-input"
+              :placeholder="t('certPasswordPrompt')"
+              @keydown.enter="submitCertPassword"
+            />
+            <p v-if="certPasswordError" class="cert-password-err">{{ t('certPasswordError') }}</p>
+            <div class="cert-password-actions">
+              <button type="button" class="cert-password-btn cert-password-cancel" @click="closeCertPasswordModal">{{ t('certPasswordCancel') }}</button>
+              <button type="button" class="cert-password-btn cert-password-submit" @click="submitCertPassword">{{ t('certPasswordSubmit') }}</button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- 证书图片弹窗 -->
+    <Teleport to="body">
+      <Transition name="cert-modal">
+        <div v-if="certModalImage" class="cert-modal-overlay cert-modal-protect" @click="certModalImage = null" @contextmenu.prevent>
+          <div class="cert-modal-content" @click.stop @contextmenu.prevent>
+            <img :src="certModalImage" :alt="''" class="cert-modal-img" draggable="false" @contextmenu.prevent />
+            <button type="button" class="cert-modal-close" @click="certModalImage = null" aria-label="关闭">×</button>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
 <script setup>
-import { ref, inject } from 'vue'
+import { ref, inject, onMounted, onUnmounted } from 'vue'
 import { getCurrentLanguage, t as translate } from '../i18n'
+import { getCertImage, verifyCertPassword } from '../utils/certImages'
 
 const currentLanguage = inject('language', ref(getCurrentLanguage()))
 
-// 个人照片：设置路径即可显示，如 '/photo.jpg'，留空显示占位
-const photoSrc = ref('')
+// 个人照片：public/profile.jpg，相对路径 /profile.jpg
+const photoSrc = ref('/profile.jpg')
+const photoError = ref(false)
+
+// 证书弹窗（密码校验，仅内存，刷新后需重输）
+const certUnlocked = ref(false)
+const certModalImage = ref(null)
+const certPasswordModal = ref(false)
+const certPasswordInput = ref('')
+const certPasswordError = ref(false)
+const certPending = ref(null) // { section, index }
+
+const openCertModal = (section, index) => {
+  const src = getCertImage(section, index)
+  if (!src) return
+  if (certUnlocked.value) {
+    certModalImage.value = src
+  } else {
+    certPending.value = { section, index }
+    certPasswordInput.value = ''
+    certPasswordError.value = false
+    certPasswordModal.value = true
+  }
+}
+
+const closeCertPasswordModal = () => {
+  certPasswordModal.value = false
+  certPending.value = null
+  certPasswordInput.value = ''
+  certPasswordError.value = false
+}
+
+const submitCertPassword = () => {
+  if (verifyCertPassword(certPasswordInput.value)) {
+    certUnlocked.value = true
+    const pending = certPending.value
+    closeCertPasswordModal()
+    if (pending) {
+      const src = getCertImage(pending.section, pending.index)
+      if (src) certModalImage.value = src
+    }
+  } else {
+    certPasswordError.value = true
+  }
+}
+
+const onCertKeydown = (e) => {
+  if (e.key === 'Escape') {
+    certModalImage.value = null
+    closeCertPasswordModal()
+  }
+}
+
+onMounted(() => { window.addEventListener('keydown', onCertKeydown) })
+onUnmounted(() => { window.removeEventListener('keydown', onCertKeydown) })
 
 const t = (key) => translate(key, currentLanguage.value)
 
@@ -389,6 +480,7 @@ const highlightKeywords = (text) => {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
 }
 
 .resume-photo-placeholder {
@@ -552,6 +644,14 @@ const highlightKeywords = (text) => {
   color: var(--accent);
   background: var(--accent-soft);
   border: 1px solid var(--accent-border);
+}
+
+.design-tag-clickable {
+  cursor: pointer;
+}
+
+.design-tag-clickable:hover {
+  filter: brightness(1.05);
 }
 
 .design-tag-muted {
@@ -721,14 +821,6 @@ const highlightKeywords = (text) => {
   border-radius: var(--radius-sm);
 }
 
-.education-logo-westminster {
-  filter: brightness(0) invert(1);
-}
-
-[data-theme="light"] .education-logo-westminster {
-  filter: brightness(0);
-}
-
 .education-title {
   font-family: var(--font-display);
   font-size: 14px;
@@ -759,5 +851,145 @@ const highlightKeywords = (text) => {
   font-size: 11px;
   color: var(--text-muted);
   margin-left: 1.5em; /* ~4-6 空格 */
+}
+
+/* 证书弹窗 */
+.cert-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  cursor: pointer;
+}
+
+.cert-modal-content {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+  cursor: default;
+}
+
+.cert-modal-img {
+  max-width: 100%;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+  pointer-events: none;
+}
+
+.cert-modal-close {
+  position: absolute;
+  top: -40px;
+  right: 0;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-size: 24px;
+  line-height: 1;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.cert-modal-close:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.cert-modal-enter-active,
+.cert-modal-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.cert-modal-enter-from,
+.cert-modal-leave-to {
+  opacity: 0;
+}
+
+/* 证书密码弹窗 */
+.cert-password-box {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-xl);
+  min-width: 280px;
+}
+
+.cert-password-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-md);
+}
+
+.cert-password-input {
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: 14px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.cert-password-input:focus {
+  outline: none;
+  border-color: var(--accent-border);
+}
+
+.cert-password-err {
+  font-size: 12px;
+  color: var(--accent);
+  margin: 0 0 var(--spacing-sm);
+}
+
+.cert-password-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  justify-content: flex-end;
+  margin-top: var(--spacing-md);
+}
+
+.cert-password-btn {
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-size: 13px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cert-password-cancel {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+.cert-password-cancel:hover {
+  border-color: var(--border-hover);
+}
+
+.cert-password-submit {
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: #fff;
+}
+
+.cert-password-submit:hover {
+  filter: brightness(1.1);
 }
 </style>
