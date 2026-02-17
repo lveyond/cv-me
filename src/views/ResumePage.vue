@@ -38,7 +38,10 @@
 
         <div class="resume-hero-photo">
           <div class="resume-photo-frame">
-            <img v-if="photoSrc && !photoError" :src="photoSrc" :alt="t('resume.name')" class="resume-photo-img" @error="photoError = true" />
+            <div v-if="photoSrc && !photoError" class="photo-protect">
+              <img :src="photoSrc" :alt="t('resume.name')" class="resume-photo-img" draggable="false" @error="photoError = true" @contextmenu.prevent />
+              <div class="photo-overlay" @contextmenu.prevent></div>
+            </div>
             <div v-else class="resume-photo-placeholder">
               <span class="resume-photo-hint">Photo</span>
             </div>
@@ -476,6 +479,18 @@ const highlightKeywords = (text) => {
   background: var(--bg-tertiary);
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-card);
+}
+
+.photo-protect {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.photo-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: auto;
 }
 
 .resume-photo-img {

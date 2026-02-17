@@ -24,7 +24,10 @@
         <template v-if="card.id === 'photo'">
           <div class="mosaic-photo-wrap mosaic-polaroid">
             <div class="mosaic-photo">
-              <img v-if="photoSrc && !photoError" :src="photoSrc" :alt="t('resume.name')" class="mosaic-photo-img" @error="photoError = true" />
+              <div v-if="photoSrc && !photoError" class="photo-protect">
+                <img :src="photoSrc" :alt="t('resume.name')" class="mosaic-photo-img" draggable="false" @error="photoError = true" @contextmenu.prevent />
+                <div class="photo-overlay" @contextmenu.prevent></div>
+              </div>
               <div v-else class="mosaic-photo-placeholder">
                 <span class="mosaic-photo-hint">Photo</span>
               </div>
@@ -507,6 +510,18 @@ const highlightKeywords = (text) => {
   background: var(--bg-tertiary);
   border: 1px solid var(--border-color);
   border-radius: 12px;
+}
+
+.photo-protect {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.photo-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: auto;
 }
 
 .mosaic-photo-img {
