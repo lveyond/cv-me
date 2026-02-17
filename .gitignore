@@ -54,6 +54,21 @@ coverage/
 *.temp
 .cache/
 
+# 证书 base64 输出（勿提交）
+scripts/*.txt
+
+# 隐私图片（头像 + 证书，不提交到公开仓库）
+public/senior.jpg
+public/sf.jpg
+public/bcm.jpg
+public/pk.jpg
+public/dataxjx.jpg
+public/xzxlh.jpg
+public/szzg3.jpg
+
+# 个人头像（隐私）
+public/profile.jpg
+
 # 其他
 *.log
 *.pid

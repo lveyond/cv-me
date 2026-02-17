@@ -31,6 +31,27 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Restore private images
+        env:
+          PROFILE_PHOTO: ${{ secrets.PROFILE_PHOTO }}
+          CERT_SENIOR: ${{ secrets.CERT_SENIOR }}
+          CERT_SF: ${{ secrets.CERT_SF }}
+          CERT_BCM: ${{ secrets.CERT_BCM }}
+          CERT_PK: ${{ secrets.CERT_PK }}
+          CERT_DATAXJX: ${{ secrets.CERT_DATAXJX }}
+          CERT_XZXLH: ${{ secrets.CERT_XZXLH }}
+          CERT_SZZG3: ${{ secrets.CERT_SZZG3 }}
+        run: |
+          mkdir -p public
+          [ -n "$PROFILE_PHOTO" ] && printf '%s' "$PROFILE_PHOTO" | base64 -d > public/profile.jpg
+          [ -n "$CERT_SENIOR" ] && printf '%s' "$CERT_SENIOR" | base64 -d > public/senior.jpg
+          [ -n "$CERT_SF" ] && printf '%s' "$CERT_SF" | base64 -d > public/sf.jpg
+          [ -n "$CERT_BCM" ] && printf '%s' "$CERT_BCM" | base64 -d > public/bcm.jpg
+          [ -n "$CERT_PK" ] && printf '%s' "$CERT_PK" | base64 -d > public/pk.jpg
+          [ -n "$CERT_DATAXJX" ] && printf '%s' "$CERT_DATAXJX" | base64 -d > public/dataxjx.jpg
+          [ -n "$CERT_XZXLH" ] && printf '%s' "$CERT_XZXLH" | base64 -d > public/xzxlh.jpg
+          [ -n "$CERT_SZZG3" ] && printf '%s' "$CERT_SZZG3" | base64 -d > public/szzg3.jpg
+
       - name: Build
         run: npm run build
 

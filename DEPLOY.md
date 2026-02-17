@@ -37,8 +37,43 @@
 https://你的用户名.github.io/cv-me/
 ```
 
-## 注意事项
+## 证书图片（隐私保护）
 
-1. **Base 路径**：如果部署到子路径（如 `/cv-me/`），需在 `vite.config.js` 中配置 `base: '/cv-me/'`
-2. **路由模式**：项目使用 Hash 路由，兼容 GitHub Pages 静态部署
-3. **仓库可见性**：公开仓库可免费使用 GitHub Pages；私有仓库需 GitHub Enterprise
+隐私图片（头像 + 证书）已加入 `.gitignore`，**不会**被提交到公开仓库。部署时通过 **GitHub Secrets** 注入，构建时自动还原到 `public/`。
+
+### 配置步骤
+
+1. **生成 base64**：
+   - **方式一**：双击运行 `scripts\encode-certs.bat`
+   - **方式二**：在项目根目录执行 `node scripts/encode-certs.cjs`
+   会在 `scripts/` 下生成 `PROFILE_PHOTO.txt`、`CERT_SENIOR.txt` 等文件（已 gitignore）。
+
+2. **添加 GitHub Secrets**：
+   - 打开仓库 **Settings** > **Secrets and variables** > **Actions**
+   - 点击 **New repository secret**
+   - 依次添加 8 个 Secret，名称与值如下：
+
+   | 名称 | 值 |
+   |------|-----|
+   | PROFILE_PHOTO | 从 `scripts/PROFILE_PHOTO.txt` 复制全部内容 |
+   | CERT_SENIOR | 从 `scripts/CERT_SENIOR.txt` 复制 |
+   | CERT_SF | 从 `scripts/CERT_SF.txt` 复制 |
+   | CERT_BCM | 从 `scripts/CERT_BCM.txt` 复制 |
+   | CERT_PK | 从 `scripts/CERT_PK.txt` 复制 |
+   | CERT_DATAXJX | 从 `scripts/CERT_DATAXJX.txt` 复制 |
+   | CERT_XZXLH | 从 `scripts/CERT_XZXLH.txt` 复制 |
+   | CERT_SZZG3 | 从 `scripts/CERT_SZZG3.txt` 复制 |
+
+3. **推送代码**：GitHub Actions 构建时会自动解码并写入 `public/`，部署后证书可正常显示。
+
+### 若证书此前已提交过
+
+需从 Git 中移除（本地文件保留）：
+```bash
+git rm --cached public/profile.jpg public/senior.jpg public/sf.jpg public/bcm.jpg public/pk.jpg public/dataxjx.jpg public/xzxlh.jpg public/szzg3.jpg
+git commit -m "chore: remove private images from repo"
+```
+
+### 说明
+
+密码保护仅为前端限制，技术用户仍可能通过开发者工具获取图片。若需更强保护，需配合后端鉴权。
