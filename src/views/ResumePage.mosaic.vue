@@ -366,13 +366,25 @@ const onCardMouseDown = (e, cardId) => {
   document.addEventListener('mouseup', onMouseUp)
 }
 
+const getCardDimensions = (cardId) => {
+  if (cardId === 'photo') return { w: 620, h: 320 }
+  if (['experience', 'skills'].includes(cardId)) return { w: 560, h: 400 }
+  return { w: 420, h: 350 }
+}
+
 const onMouseMove = (e) => {
   if (!dragState) return
   hasDragged = true
+  const canvas = canvasRef.value
+  const canvasW = canvas ? canvas.offsetWidth : 1200
+  const canvasH = canvas ? canvas.offsetHeight : 800
+  const { w: cardW, h: cardH } = getCardDimensions(dragState.cardId)
   const dx = e.clientX - dragState.startX
   const dy = e.clientY - dragState.startY
-  const newX = Math.max(0, dragState.initialX + dx)
-  const newY = Math.max(0, dragState.initialY + dy)
+  let newX = dragState.initialX + dx
+  let newY = dragState.initialY + dy
+  newX = Math.max(0, Math.min(newX, canvasW - cardW))
+  newY = Math.max(0, Math.min(newY, canvasH - cardH))
   cardPositions.value = {
     ...cardPositions.value,
     [dragState.cardId]: { x: newX, y: newY }

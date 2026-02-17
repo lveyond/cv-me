@@ -43,9 +43,10 @@ https://你的用户名.github.io/cv-me/
 
 ### 配置步骤
 
-1. **生成 base64**：
+1. **生成 base64**（首次需先执行 `npm install` 安装 sharp）：
    - **方式一**：双击运行 `scripts\encode-certs.bat`
    - **方式二**：在项目根目录执行 `node scripts/encode-certs.cjs`
+   - 脚本会自动压缩图片以符合 GitHub Secret 48KB 限制
    会在 `scripts/` 下生成 `PROFILE_PHOTO.txt`、`CERT_SENIOR.txt` 等文件（已 gitignore）。
 
 2. **添加 GitHub Secrets**：
