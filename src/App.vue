@@ -52,7 +52,19 @@ const currentLanguage = ref(getCurrentLanguage())
 const route = useRoute()
 
 const THEME_KEY = 'cv-me-theme'
-const theme = ref(localStorage.getItem(THEME_KEY) || 'dark')
+
+/** 按时间判断主题：19:00-06:30 深色，06:31-18:59 浅色 */
+const getThemeByTime = () => {
+  const now = new Date()
+  const h = now.getHours()
+  const m = now.getMinutes()
+  if (h >= 19) return 'dark'
+  if (h < 6) return 'dark'
+  if (h === 6 && m <= 30) return 'dark'
+  return 'light'
+}
+
+const theme = ref(localStorage.getItem(THEME_KEY) || getThemeByTime())
 
 const applyTheme = (val) => {
   document.documentElement.setAttribute('data-theme', val)
@@ -250,6 +262,12 @@ window.addEventListener('language-changed', () => {
   max-width: 1400px;
   width: 100%;
   margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .main-content:not(.main-content-mosaic) {
+    padding: var(--spacing-md) max(12px, 3vw);
+  }
 }
 
 .main-content-mosaic {

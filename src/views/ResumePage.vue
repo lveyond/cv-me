@@ -402,6 +402,12 @@ const highlightKeywords = (text) => {
   background: transparent;
 }
 
+@media (max-width: 768px) {
+  .resume-page {
+    padding: max(12px, 3vw);
+  }
+}
+
 .resume-container {
   max-width: 1000px;
   margin: 0 auto;
@@ -522,11 +528,20 @@ const highlightKeywords = (text) => {
 @media (max-width: 768px) {
   .resume-hero {
     flex-direction: column;
+    padding: var(--spacing-md) max(12px, 3vw) var(--spacing-lg);
   }
 
   .resume-hero-photo {
     align-self: flex-start;
     position: static;
+  }
+
+  .resume-content {
+    padding: 0 max(12px, 3vw) var(--spacing-xl);
+  }
+
+  .resume-header {
+    padding: var(--spacing-md) max(12px, 3vw) var(--spacing-lg);
   }
 }
 

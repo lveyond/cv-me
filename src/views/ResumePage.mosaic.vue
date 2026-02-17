@@ -457,6 +457,12 @@ const highlightKeywords = (text) => {
   overflow-x: hidden;
 }
 
+@media (max-width: 768px) {
+  .mosaic-page {
+    padding: var(--spacing-sm) 0 var(--spacing-lg);
+  }
+}
+
 /* 背景装饰 */
 .mosaic-bg {
   position: fixed;
@@ -605,6 +611,17 @@ const highlightKeywords = (text) => {
   margin: 0;
 }
 
+@media (max-width: 768px) {
+  .mosaic-canvas {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--spacing-md);
+    min-height: auto;
+    padding: 0 max(12px, 3vw);
+  }
+}
+
 /* 卡片 */
 .mosaic-card {
   position: absolute;
@@ -636,6 +653,30 @@ const highlightKeywords = (text) => {
   align-items: center;
   padding: var(--spacing-xl);
   border-radius: 12px;
+}
+
+@media (max-width: 768px) {
+  .mosaic-card {
+    position: static !important;
+    width: 100% !important;
+    left: auto !important;
+    top: auto !important;
+    padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-lg) var(--spacing-lg);
+  }
+
+  .mosaic-card-wide,
+  .mosaic-card-photo {
+    width: 100% !important;
+  }
+
+  .mosaic-card-photo {
+    flex-direction: column;
+    min-height: auto;
+  }
+
+  .mosaic-card-handle {
+    display: none;
+  }
 }
 
 .mosaic-card-photo .mosaic-photo-wrap {
