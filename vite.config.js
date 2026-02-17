@@ -8,9 +8,8 @@ export default defineConfig({
         port: 3000,
         open: true
     },
-    // GitHub Pages 部署配置
-    // 仓库名是 qt，所以 base 应该是 '/qt/'
-    base: process.env.NODE_ENV === 'production' ? '/qt/' : '/',
+    // GitHub Pages 部署配置（base 需与仓库名一致）
+    base: process.env.NODE_ENV === 'production' ? '/cv-me/' : '/',
     build: {
         outDir: 'dist',
         assetsDir: 'assets',
