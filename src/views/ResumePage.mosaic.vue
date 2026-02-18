@@ -457,7 +457,8 @@ const highlightKeywords = (text) => {
   overflow-x: hidden;
 }
 
-@media (max-width: 768px) {
+/* 仅移动端：卡片两端对齐、纵向排列；Web 端保持自由分布 */
+@media (max-width: 600px) {
   .mosaic-page {
     padding: var(--spacing-sm) 0 var(--spacing-lg);
   }
@@ -611,7 +612,7 @@ const highlightKeywords = (text) => {
   margin: 0;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 600px) {
   .mosaic-canvas {
     display: flex;
     flex-direction: column;
@@ -655,7 +656,7 @@ const highlightKeywords = (text) => {
   border-radius: 12px;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 600px) {
   .mosaic-card {
     position: static !important;
     width: 100% !important;
