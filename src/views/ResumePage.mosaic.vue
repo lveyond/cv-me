@@ -13,9 +13,11 @@
         v-for="card in orderedCards"
         :key="card.id"
         class="mosaic-card mosaic-card-enter"
-        :class="{ 'mosaic-card-wide': ['experience', 'skills'].includes(card.id), 'mosaic-card-photo': card.id === 'photo', 'mosaic-card-dragging': draggingCardId === card.id, 'mosaic-card-active': activeCardId === card.id }"
+        :class="{ 'mosaic-card-wide': ['experience', 'skills'].includes(card.id), 'mosaic-card-photo': card.id === 'photo', 'mosaic-card-projects': card.id === 'projects', 'mosaic-card-projects-expanded': card.id === 'projects' && projectsExpanded, 'mosaic-card-dragging': draggingCardId === card.id, 'mosaic-card-active': activeCardId === card.id }"
         :style="getCardStyle(card)"
         @click="onCardClick(card.id)"
+        @dblclick="onCardDblClick(card.id)"
+        @touchend="onCardTouchEnd($event, card.id)"
       >
         <div class="mosaic-card-handle" title="拖拽移动位置" @mousedown="onCardMouseDown($event, card.id)">
           <span class="mosaic-card-drag-icon">⋮⋮⋮⋮⋮⋮⋮</span>
@@ -164,6 +166,40 @@
             </div>
           </div>
         </template>
+
+        <template v-else-if="card.id === 'projects'">
+          <div v-if="!projectsExpanded" class="mosaic-projects-folded" aria-label="双击展开">
+            <div class="mosaic-projects-dog-wrap">
+              <img :src="assetUrl('/dog-orange.svg')" alt="GitHub 项目" class="mosaic-balloon-dog" draggable="false" @contextmenu.prevent @dragstart.prevent />
+              <span class="mosaic-projects-double-click">{{ t('resume.projectsDoubleClick') }}</span>
+              <div class="mosaic-projects-dog-protect" @contextmenu.prevent @dragstart.prevent></div>
+            </div>
+          </div>
+          <div v-else class="mosaic-projects-panel">
+            <div class="mosaic-section-head">
+              <span class="mosaic-num">✦</span>
+              <h2 class="mosaic-section-title">{{ t('resume.projects') }}</h2>
+            </div>
+            <div class="mosaic-section-body">
+              <p class="mosaic-projects-desc">{{ t('resume.projectsDesc') }}</p>
+              <div class="mosaic-projects-list">
+                <a v-for="p in projectsList" :key="p.repo" :href="p.url" target="_blank" rel="noopener noreferrer" class="mosaic-project-item" @click.stop>
+                  <div class="mosaic-project-text">
+                    <span class="mosaic-project-name">{{ p.name }}</span>
+                    <span v-if="p.descKey" class="mosaic-project-desc">{{ t(p.descKey) }}</span>
+                    <span class="mosaic-project-repo">{{ p.repo }}</span>
+                  </div>
+                  <div class="mosaic-project-thumb">
+                    <img v-if="p.thumbnail" :src="assetUrl(p.thumbnail)" :alt="p.name" class="mosaic-project-thumb-img" />
+                    <div v-else class="mosaic-project-thumb-placeholder">
+                      <span class="mosaic-project-thumb-hint">{{ t('resume.projectsThumbHint') }}</span>
+                    </div>
+                  </div>
+                </a>
+              </div>
+            </div>
+          </div>
+        </template>
       </div>
     </main>
 
@@ -266,7 +302,7 @@ onUnmounted(() => { window.removeEventListener('keydown', onCertKeydown) })
 
 const CARD_ORDER_KEY = 'cv-mosaic-card-order'
 const CARD_POSITIONS_KEY = 'cv-mosaic-card-positions'
-const defaultOrder = ['photo', 'summary', 'qualifications', 'education', 'experience', 'skills']
+const defaultOrder = ['photo', 'summary', 'qualifications', 'education', 'experience', 'skills', 'projects']
 
 const loadCardOrder = () => {
   try {
@@ -291,13 +327,18 @@ const getDefaultPositions = (canvasWidth) => {
   const row1 = 0
   const row2 = 300
   const skillsOffset = 48
+  const projectsX = Math.max(col1, w - 140 - gap)
+  const firstScreenH = typeof window !== 'undefined' ? window.innerHeight : 768
+  const projectsY = firstScreenH - 70 - 140
+  const skillsX = Math.max(col1, col3Wide - skillsOffset)
   return {
     photo: { x: col1, y: row1 },
     summary: { x: col2, y: row1 },
     qualifications: { x: col3, y: row1 },
     education: { x: col1, y: row2 },
-    experience: { x: col2, y: row2 },
-    skills: { x: Math.max(col1, col3Wide - skillsOffset), y: row2 }
+    experience: { x: col2 - 50, y: row2 - 50 },
+    skills: { x: skillsX + 40, y: row2 + 15 },
+    projects: { x: projectsX, y: projectsY }
   }
 }
 
@@ -333,7 +374,7 @@ watch(cardPositions, (val) => {
   localStorage.setItem(CARD_POSITIONS_KEY, JSON.stringify(val))
 }, { deep: true })
 
-const STACK_ORDER = { photo: 1, summary: 2, qualifications: 3, education: 4, experience: 5, skills: 6 }
+const STACK_ORDER = { photo: 1, summary: 2, qualifications: 3, education: 4, experience: 5, skills: 6, projects: 7 }
 
 const getCardStyle = (card) => {
   const pos = cardPositions.value[card.id] ?? defaultPositions[card.id] ?? { x: 0, y: 0 }
@@ -352,6 +393,7 @@ let hasDragged = false
 const draggingCardId = ref(null)
 const activeCardId = ref(null)
 const justDraggedRef = ref(false)
+const projectsExpanded = ref(false)
 
 const onCardMouseDown = (e, cardId) => {
   e.preventDefault()
@@ -374,6 +416,7 @@ const onCardMouseDown = (e, cardId) => {
 const getCardDimensions = (cardId) => {
   if (cardId === 'photo') return { w: 620, h: 320 }
   if (['experience', 'skills'].includes(cardId)) return { w: 560, h: 400 }
+  if (cardId === 'projects') return projectsExpanded.value ? { w: 420, h: 380 } : { w: 140, h: 140 }
   return { w: 420, h: 350 }
 }
 
@@ -409,10 +452,50 @@ const onCardClick = (cardId) => {
     justDraggedRef.value = false
     return
   }
-  activeCardId.value = cardId
+  if (cardId !== 'projects') {
+    activeCardId.value = cardId
+  }
+}
+
+const clearSelection = () => {
+  try {
+    window.getSelection()?.removeAllRanges()
+  } catch (_) {}
+}
+
+const onCardDblClick = (cardId) => {
+  if (justDraggedRef.value) return
+  if (cardId === 'projects') {
+    projectsExpanded.value = !projectsExpanded.value
+    if (projectsExpanded.value) {
+      activeCardId.value = cardId
+      clearSelection()
+    }
+  }
+}
+
+let lastProjectsTapTime = 0
+const onCardTouchEnd = (e, cardId) => {
+  if (cardId !== 'projects') return
+  const now = Date.now()
+  if (now - lastProjectsTapTime < 350) {
+    lastProjectsTapTime = 0
+    e.preventDefault()
+    projectsExpanded.value = !projectsExpanded.value
+    if (projectsExpanded.value) {
+      activeCardId.value = cardId
+      clearSelection()
+    }
+  } else {
+    lastProjectsTapTime = now
+  }
 }
 
 const t = (key) => translate(key, currentLanguage.value)
+
+const projectsList = [
+  { name: 'cv-me', descKey: 'resume.projectsCvMe', repo: 'lveyond/cv-me', url: 'https://github.com/lveyond/cv-me' }
+]
 
 const skillGroups = {
   productDesign: ['skillProductPrototype', 'skillUXDesign', 'skillInteractionDesign', 'Figma', 'Sketch', 'Adobe XD'],
@@ -666,13 +749,23 @@ const highlightKeywords = (text) => {
   }
 
   .mosaic-card-wide,
-  .mosaic-card-photo {
+  .mosaic-card-photo,
+  .mosaic-card-projects-expanded {
     width: 100% !important;
   }
 
   .mosaic-card-photo {
     flex-direction: column;
     min-height: auto;
+  }
+
+  .mosaic-card-projects:not(.mosaic-card-projects-expanded) {
+    width: 100% !important;
+    min-height: 120px;
+  }
+
+  .mosaic-projects-folded {
+    min-height: 120px;
   }
 
   .mosaic-card-handle {
@@ -690,8 +783,200 @@ const highlightKeywords = (text) => {
   flex: 1;
 }
 
-.mosaic-photo-wrap {
+/* 项目卡片 - 几何图形按钮（气球狗），可折叠/展开 */
+.mosaic-card-projects {
+  width: 140px;
+  min-height: 140px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+[data-theme="dark"] .mosaic-card-projects {
+  background: transparent;
+}
+
+/* 项目卡片折叠时：拖拽把手缩短，悬浮在小狗头上 3px 处 */
+.mosaic-card-projects .mosaic-card-handle {
+  width: 32px;
+  height: 12px;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 4px;
+}
+
+.mosaic-card-projects-expanded {
+  width: min(420px, calc(50% - 24px));
+  min-height: 380px;
+  padding: var(--spacing-xl);
+  padding-right: 48px;
+  display: block;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-card);
+}
+
+.mosaic-card-projects-expanded {
+  background: linear-gradient(160deg, #fdf4ef 0%, var(--bg-secondary) 35%);
+  border-color: #e8b09a;
+}
+
+[data-theme="dark"] .mosaic-card-projects-expanded {
+  background: linear-gradient(160deg, #2a1f1a 0%, var(--bg-secondary) 40%);
+  border-color: #8b5a45;
+}
+
+.mosaic-projects-folded {
+  width: 100%;
+  height: 100%;
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.mosaic-projects-dog-wrap {
   position: relative;
+  display: inline-block;
+}
+
+.mosaic-balloon-dog {
+  width: 80px;
+  height: 80px;
+  opacity: 0.9;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+
+.mosaic-projects-double-click {
+  position: absolute;
+  bottom: 2px;
+  right: 0;
+  font-size: 9px;
+  font-weight: 400;
+  color: var(--text-muted);
+  opacity: 0.85;
+  white-space: nowrap;
+}
+
+.mosaic-projects-dog-protect {
+  position: absolute;
+  inset: 0;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.mosaic-projects-folded-hint {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+}
+
+.mosaic-projects-panel {
+  width: 100%;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.mosaic-projects-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0 0 var(--spacing-md);
+  line-height: 1.6;
+}
+
+.mosaic-projects-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.mosaic-project-item {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.mosaic-project-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  justify-content: center;
+}
+
+.mosaic-project-thumb {
+  flex-shrink: 0;
+  width: auto;
+  aspect-ratio: 1;
+  align-self: stretch;
+  min-height: 0;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--bg-hover);
+  border: 1px dashed var(--border-color);
+}
+
+.mosaic-project-thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mosaic-project-thumb-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mosaic-project-thumb-hint {
+  font-size: 10px;
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+
+.mosaic-project-item:hover {
+  border-color: rgba(232, 122, 74, 0.6);
+  background: var(--bg-hover);
+}
+
+.mosaic-project-name {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.mosaic-project-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.mosaic-project-repo {
+  font-size: 11px;
+  color: var(--text-muted);
 }
 
 .mosaic-card:nth-child(1) { animation-delay: 0.03s; }
@@ -700,6 +985,7 @@ const highlightKeywords = (text) => {
 .mosaic-card:nth-child(4) { animation-delay: 0.12s; }
 .mosaic-card:nth-child(5) { animation-delay: 0.15s; }
 .mosaic-card:nth-child(6) { animation-delay: 0.18s; }
+.mosaic-card:nth-child(7) { animation-delay: 0.21s; }
 
 .mosaic-card:hover {
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
@@ -735,6 +1021,11 @@ const highlightKeywords = (text) => {
 .mosaic-card-drag-icon {
   font-size: 12px;
   letter-spacing: 2px;
+}
+
+.mosaic-card-projects .mosaic-card-drag-icon {
+  font-size: 9px;
+  letter-spacing: 1px;
 }
 
 .mosaic-card-ghost {

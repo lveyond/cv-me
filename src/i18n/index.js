@@ -114,7 +114,12 @@ export const languages = {
             edu4SchoolEn: 'Donghua University',
             edu4Major: '服装设计与工程',
             edu4Rank: '211、软科TOP100',
-            edu4Logo: '/dhu-logo.png'
+            edu4Logo: '/dhu-logo.png',
+            projects: 'GitHub 轻量项目',
+            projectsDesc: '个人开发尝试与小项目实践，欢迎 Star。',
+            projectsCvMe: '个人简历网站',
+            projectsDoubleClick: '双击探索',
+            projectsThumbHint: '截图'
         }
     },
     'zh-HK': {
@@ -231,7 +236,12 @@ export const languages = {
             edu4SchoolEn: 'Donghua University',
             edu4Major: '服裝設計與工程',
             edu4Rank: '211、軟科TOP100',
-            edu4Logo: '/dhu-logo.png'
+            edu4Logo: '/dhu-logo.png',
+            projects: 'GitHub 輕量項目',
+            projectsDesc: '個人開發嘗試與小項目實踐，歡迎 Star。',
+            projectsCvMe: '個人簡歷網站',
+            projectsDoubleClick: '雙擊探索',
+            projectsThumbHint: '截圖'
         }
     },
     'en': {
@@ -348,7 +358,12 @@ export const languages = {
             edu4SchoolEn: 'Donghua University',
             edu4Major: 'Fashion Design and Engineering',
             edu4Rank: '211, ARWU TOP 100',
-            edu4Logo: '/dhu-logo.png'
+            edu4Logo: '/dhu-logo.png',
+            projects: 'GitHub Side Projects',
+            projectsDesc: 'Personal dev experiments & lightweight projects. Stars welcome.',
+            projectsCvMe: 'Personal CV / Portfolio site',
+            projectsDoubleClick: 'double click',
+            projectsThumbHint: 'Screenshot'
         }
     }
 }
